@@ -9,10 +9,9 @@ import {
   PlusCircle,
   CheckCircle2,
   Clock,
-  ShieldAlert,
-  Building2,
   Calendar,
   ArrowUpRight,
+  Bot,
   X,
 } from 'lucide-react';
 import {
@@ -28,13 +27,15 @@ import KpiCard from './components/KpiCard';
 import ForecastChart from './components/ForecastChart';
 import SalesTable from './components/SalesTable';
 import KanbanBoard from './components/KanbanBoard';
+import { ClientLogo, VendorBadge } from './components/ClientLogo';
+import CduAgentDrawer from './components/CduAgentDrawer';
 
 const initialDeals = loadPipeline();
 
 export function App() {
   const [deals, setDeals] = useState<DealRow[]>(initialDeals);
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'kanban' | 'cotizaciones' | 'forecast'
+    'dashboard' | 'kanban' | 'cotizaciones' | 'forecast' | 'agent'
   >('dashboard');
   const [selectedPeriod, setSelectedPeriod] = useState<string>('Noviembre 2026');
   const [kpiBlockFilter, setKpiBlockFilter] = useState<
@@ -237,6 +238,12 @@ export function App() {
                   icon: TrendingUp,
                   badge: 'Editorial',
                 },
+                {
+                  id: 'agent',
+                  label: 'Agente IA Comercial',
+                  icon: Bot,
+                  badge: 'AI SDK',
+                },
               ].map((item) => {
                 const Icon = item.icon;
                 const active = activeTab === item.id;
@@ -268,10 +275,10 @@ export function App() {
               })}
             </nav>
 
-            {/* Selected Deal Quick Inspector in Sidebar */}
+            {/* Selected Deal Quick Inspector in Sidebar with ClientLogo */}
             {selectedDeal && (
               <div className="mt-6 p-3.5 rounded-xl border border-[#DDD4C5] dark:border-slate-800 bg-[#F5F1E8]/60 dark:bg-[#101D38]/70">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
                     Ficha Activa · {selectedDeal.code}
                   </span>
@@ -279,10 +286,18 @@ export function App() {
                     {selectedDeal.probability}%
                   </span>
                 </div>
-                <p className="text-xs font-serif font-bold text-slate-900 dark:text-white">
-                  {selectedDeal.client}
-                </p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-snug">
+
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <ClientLogo client={selectedDeal.client} size="md" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-serif font-bold text-slate-900 dark:text-white truncate">
+                      {selectedDeal.client}
+                    </p>
+                    <VendorBadge brand={selectedDeal.brand} />
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 leading-snug">
                   {selectedDeal.opportunity}
                 </p>
                 <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
@@ -377,6 +392,7 @@ export function App() {
                 <option value="kanban">Kanban</option>
                 <option value="cotizaciones">Cotizaciones</option>
                 <option value="forecast">Forecast</option>
+                <option value="agent">Agente IA</option>
               </select>
 
               {/* Currency Switch */}
@@ -669,20 +685,23 @@ export function App() {
                           onClick={() => setSelectedDeal(d)}
                           className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B132B] border border-slate-200/60 dark:border-slate-800/80 flex items-start justify-between gap-2 cursor-pointer hover:border-[#00B4D8]"
                         >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              {d.status === 'Closed Won' ? (
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                              ) : (
-                                <Clock className="w-3.5 h-3.5 text-[#00B4D8] shrink-0" />
-                              )}
-                              <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                {d.client} · {d.code}
-                              </span>
+                          <div className="flex items-start gap-2 min-w-0">
+                            <ClientLogo client={d.client} size="sm" />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                {d.status === 'Closed Won' ? (
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                                ) : (
+                                  <Clock className="w-3 h-3 text-[#00B4D8] shrink-0" />
+                                )}
+                                <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                  {d.client} · {d.code}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5">
+                                {d.nextAction || d.opportunity}
+                              </p>
                             </div>
-                            <p className="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5">
-                              {d.nextAction || d.opportunity}
-                            </p>
                           </div>
                           <span className="text-xs font-mono font-semibold text-slate-900 dark:text-[#C6F432] shrink-0">
                             {fmt(d.estimatedAmount, true)}
@@ -737,10 +756,10 @@ export function App() {
                     </div>
 
                     <button
-                      onClick={() => setActiveTab('forecast')}
+                      onClick={() => setActiveTab('agent')}
                       className="mt-4 w-full py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white dark:bg-[#00B4D8]/20 dark:text-[#00B4D8] border border-transparent dark:border-[#00B4D8]/40 hover:opacity-90 transition"
                     >
-                      Auditar Escenarios por Cuenta Clave →
+                      Auditar con Agente IA Comercial →
                     </button>
                   </div>
                 </div>
@@ -755,7 +774,7 @@ export function App() {
                       Tablero Kanban de Oportunidades Abiertas ({selectedPeriod})
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Organizado por etapa del embudo comercial TECNOVOA
+                      Organizado por etapa del embudo comercial TECNOVOA con logos de clientes y partners
                     </p>
                   </div>
                 </div>
@@ -787,7 +806,7 @@ export function App() {
                   quotaClp={quotaClp}
                 />
 
-                {/* Editorial Account Hierarchy Matrix (replaces oversized typography with clean corporate proportional bars) */}
+                {/* Editorial Account Hierarchy Matrix with Client Logos & Vendor Badges */}
                 <div className="rounded-xl p-5 border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm">
                   <div className="mb-4">
                     <span className="text-[10px] font-mono uppercase tracking-widest text-[#2A5FFF] dark:text-[#00B4D8] font-semibold">
@@ -809,16 +828,23 @@ export function App() {
                         >
                           <div>
                             <div className="flex items-center justify-between gap-2">
-                              <span className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-slate-900 dark:text-white">
-                                <Building2 className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8]" />
-                                #{idx + 1} {cg.client}
-                              </span>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-[#101D38] text-slate-700 dark:text-slate-300">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <ClientLogo client={cg.client} size="lg" />
+                                <div className="min-w-0">
+                                  <span className="text-xs font-serif font-bold text-slate-900 dark:text-white block truncate">
+                                    #{idx + 1} {cg.client}
+                                  </span>
+                                  <span className="text-[10px] font-mono text-slate-400">
+                                    Top: {cg.topForecast}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-[#101D38] text-slate-700 dark:text-slate-300 shrink-0">
                                 {cg.count} {cg.count === 1 ? 'deal' : 'deals'}
                               </span>
                             </div>
 
-                            <div className="mt-2 flex items-baseline justify-between">
+                            <div className="mt-3 flex items-baseline justify-between">
                               <div>
                                 <span className="text-[10px] font-mono uppercase text-slate-400 block">
                                   Pipeline Bruto
@@ -839,20 +865,15 @@ export function App() {
 
                             <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 mt-2.5 overflow-hidden">
                               <div
-                                style={{ width: `${ Math.max(6, barPct) }%` }}
+                                style={{ width: `${Math.max(6, barPct)}%` }}
                                 className="h-full bg-[#00B4D8] rounded-full"
                               />
                             </div>
                           </div>
 
-                          <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center gap-1">
+                          <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center gap-1.5">
                             {Array.from(cg.brands).map((b) => (
-                              <span
-                                key={b}
-                                className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-[#101D38] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
-                              >
-                                {b}
-                              </span>
+                              <VendorBadge key={b} brand={b} />
                             ))}
                           </div>
                         </div>
@@ -861,6 +882,15 @@ export function App() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {activeTab === 'agent' && (
+              <CduAgentDrawer
+                selectedPeriod={selectedPeriod}
+                currency={currency}
+                quotaClp={quotaClp}
+                exchangeRate={exchangeRate}
+              />
             )}
           </main>
         </div>

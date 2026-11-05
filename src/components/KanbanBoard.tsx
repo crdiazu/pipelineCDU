@@ -1,5 +1,6 @@
 import React from 'react';
 import { DealRow, CurrencyCode, formatCurrency } from '../data/pipeline';
+import { ClientLogo, VendorBadge } from './ClientLogo';
 
 interface Props {
   data: DealRow[];
@@ -89,7 +90,7 @@ export const KanbanBoard: React.FC<Props> = ({
                   onClick={() => onSelectDeal(deal)}
                   className="p-3 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#0B132B]/90 hover:border-[#2A5FFF] dark:hover:border-[#00B4D8] transition cursor-pointer shadow-sm"
                 >
-                  <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="text-[10px] font-mono font-semibold text-[#2A5FFF] dark:text-[#00B4D8]">
                       {deal.code}
                     </span>
@@ -98,17 +99,25 @@ export const KanbanBoard: React.FC<Props> = ({
                     </span>
                   </div>
 
-                  <div className="text-xs font-bold text-slate-900 dark:text-white">
-                    {deal.client}
+                  {/* Client Logo + Name */}
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <ClientLogo client={deal.client} size="md" />
+                    <div className="min-w-0">
+                      <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {deal.client}
+                      </div>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono block">
+                        {deal.businessType} · Cierre {deal.closeMonth}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-0.5">
+
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2 mt-1">
                     {deal.opportunity}
                   </p>
 
                   <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#101D38] text-slate-600 dark:text-slate-400 truncate max-w-[110px]">
-                      {deal.brand}
-                    </span>
+                    <VendorBadge brand={deal.brand} />
                     <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">
                       {fmt(deal.estimatedAmount, false)}
                     </span>
@@ -129,4 +138,3 @@ export const KanbanBoard: React.FC<Props> = ({
 };
 
 export default KanbanBoard;
-

@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import {
   Search,
   ArrowUpDown,
-  Filter,
   AlertCircle,
   CheckCircle2,
   Clock,
   XCircle,
 } from 'lucide-react';
 import { DealRow, CurrencyCode, formatCurrency } from '../data/pipeline';
+import { ClientLogo, VendorBadge } from './ClientLogo';
 
 interface Props {
   data: DealRow[];
@@ -262,15 +262,16 @@ export const SalesTable: React.FC<Props> = ({
                     {row.code}
                   </td>
                   <td className="py-2.5 px-3 font-medium text-slate-900 dark:text-white whitespace-nowrap">
-                    {row.client}
+                    <div className="flex items-center gap-2">
+                      <ClientLogo client={row.client} size="sm" />
+                      <span>{row.client}</span>
+                    </div>
                   </td>
                   <td className="py-2.5 px-3 text-slate-700 dark:text-slate-200 max-w-xs truncate" title={row.opportunity}>
                     {row.opportunity}
                   </td>
                   <td className="py-2.5 px-3 whitespace-nowrap">
-                    <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 dark:bg-[#0B132B] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                      {row.brand}
-                    </span>
+                    <VendorBadge brand={row.brand} />
                   </td>
                   <td className="py-2.5 px-3 font-mono font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                     {fmt(row.estimatedAmount, false)}
@@ -317,4 +318,3 @@ export const SalesTable: React.FC<Props> = ({
 };
 
 export default SalesTable;
-
