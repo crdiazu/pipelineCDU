@@ -48,7 +48,7 @@ export const CduAgentDrawer: React.FC<Props> = ({
     {
       id: 'welcome-1',
       role: 'assistant',
-      content: `Hola Cristian. Soy tu **Agente Comercial CDU** construido con **Vercel AI SDK (\`ToolLoopAgent\`)**. Tengo conectadas las herramientas \`getKpiSummary\`, \`searchDeals\` y \`prioritizeClosingActions\` sobre los 62 negocios de tu planilla.\n\nSelecciona una consulta rápida o escribe un cliente, mes o KPI para auditar en vivo.`,
+      content: `Hola Cristian. Soy tu **Agente Comercial CDU** construido con **Vercel AI SDK (\`ToolLoopAgent\`)**. Tengo conectadas las herramientas \`getKpiSummary\`, \`searchDeals\` y \`prioritizeClosingActions\` sobre los ${deals.length} negocios de tu cartera.\n\nSelecciona una consulta rápida o escribe un cliente, mes o KPI para auditar en vivo.`,
       timestamp: 'Ahora',
     },
   ]);

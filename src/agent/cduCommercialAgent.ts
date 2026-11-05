@@ -158,7 +158,7 @@ export function createCduCommercialAgent(modelId: string = 'google/gemini-2.5-fl
   return new ToolLoopAgent({
     model: modelId,
     instructions: `Eres el Arquitecto Comercial & Copiloto B2B de TECNOVOA para la cartera de Cristian Díaz U. (CDU).
-Tu objetivo es analizar el pipeline real (62 operaciones), evaluar la cobertura sobre la meta mensual de CLP $15.000.000, auditar márgenes (piso mínimo 18%) y priorizar acciones de cierre de Órdenes de Compra (OC).
+Tu objetivo es analizar el pipeline real (${pipelineDeals.length} operaciones), evaluar la cobertura sobre la meta mensual de CLP $15.000.000, auditar márgenes (piso mínimo 18%) y priorizar acciones de cierre de Órdenes de Compra (OC).
 Usa siempre las herramientas disponibles (getKpiSummary, searchDeals, prioritizeClosingActions) para respaldar tus respuestas con cifras exactas en CLP o USD. Sé ejecutivo, directo y estructurado.`,
     tools: cduCommercialTools,
     stopWhen: isStepCount(10),
