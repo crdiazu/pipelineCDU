@@ -1,4 +1,6 @@
 import React from 'react';
+import { CommercialKpis, KpiKey } from '../utils/kpi';
+import { CurrencyCode, formatCurrency } from '../data/pipeline';
 import {
   TrendingUp,
   Target,
@@ -7,18 +9,14 @@ import {
   Percent,
   Clock,
   Award,
-  BarChart3,
-  Sparkles,
-  Calculator,
+  DollarSign,
 } from 'lucide-react';
-import { CommercialKpis, KpiKey } from '../utils/kpi';
-import { CurrencyCode, formatCurrency } from '../data/pipeline';
 
 interface Props {
   kpis: CommercialKpis;
   currency: CurrencyCode;
   exchangeRate: number;
-  selectedBlock?: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
+  selectedBlock: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
   activeKpi: KpiKey;
   onSelectKpi: (key: KpiKey) => void;
 }
@@ -27,102 +25,116 @@ export const KpiCard: React.FC<Props> = ({
   kpis,
   currency,
   exchangeRate,
-  selectedBlock = 'Todos',
+  selectedBlock,
   activeKpi,
   onSelectKpi,
 }) => {
-  const fmt = (val: number, compact = false) =>
+  const fmt = (val: number, compact = true) =>
     formatCurrency(val, currency, exchangeRate, compact);
 
-  const cards: {
-    key: KpiKey;
-    block: 'Forecast' | 'Cotizaciones' | 'Conversión';
-    title: string;
-    formula: string;
-    value: string;
-    badge: string;
-    badgePositive: boolean;
-    icon: React.FC<{ className?: string }>;
-  }[] = [
+  const cards = [
     {
-      key: 'weightedPipeline',
+      key: 'weightedPipeline' as KpiKey,
       block: 'Forecast',
-      title: 'Weighted Pipeline',
-      formula: '∑ ( Monto × Prob% )',
-      value: fmt(kpis.weightedPipeline, true),
-      badge: `${((kpis.weightedPipeline / kpis.quotaAmount) * 100).toFixed(0)}% Meta`,
-      badgePositive: kpis.weightedPipeline >= kpis.quotaAmount,
+      blockLabel: 'PRONÓSTICO',
+      title: 'Cartera Ponderada',
+      mainValue: fmt(kpis.weightedPipeline, true),
+      badge: `${kpis.projectedAttainmentPct}% Meta`,
+      badgeColor:
+        kpis.projectedAttainmentPct >= 100
+          ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
+          : 'bg-amber-500/15 text-amber-700 border-amber-500/40',
+      mathFormula: 'P = ∑ ( Montoᵢ × Probᵢ% )',
       icon: TrendingUp,
     },
     {
-      key: 'pipelineCoverage',
+      key: 'pipelineCoverage' as KpiKey,
       block: 'Forecast',
-      title: 'Pipeline Coverage',
-      formula: 'Pipeline ÷ Meta Faltante',
-      value: `${kpis.pipelineCoverage.toFixed(2)}×`,
-      badge: kpis.pipelineCoverage >= 3 ? 'Óptimo (≥3×)' : 'Construir',
-      badgePositive: kpis.pipelineCoverage >= 3,
+      blockLabel: 'PRONÓSTICO',
+      title: 'Cobertura de Cuota',
+      mainValue: `${kpis.pipelineCoverage}×`,
+      badge: kpis.pipelineCoverage >= 3 ? 'Óptimo (≥3×)' : 'Reforzar (<3×)',
+      badgeColor:
+        kpis.pipelineCoverage >= 3
+          ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
+          : 'bg-rose-500/15 text-rose-700 border-rose-500/40',
+      mathFormula: 'C = Cartera Abierta ÷ Meta Faltante',
       icon: Target,
     },
     {
-      key: 'forecastAccuracy',
+      key: 'forecastAccuracy' as KpiKey,
       block: 'Forecast',
-      title: 'Forecast Accuracy',
-      formula: '1 - ( |Forecast - Real| ÷ Max )',
-      value: `${kpis.forecastAccuracy.toFixed(1)}%`,
-      badge: 'Calibrado',
-      badgePositive: kpis.forecastAccuracy >= 80,
+      blockLabel: 'PRONÓSTICO',
+      title: 'Precisión de Pronóstico',
+      mainValue: `${kpis.forecastAccuracy}%`,
+      badge: kpis.forecastAccuracy >= 85 ? 'Exacto (≥85%)' : 'En Ajuste',
+      badgeColor:
+        kpis.forecastAccuracy >= 85
+          ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
+          : 'bg-amber-500/15 text-amber-700 border-amber-500/40',
+      mathFormula: 'E = 1 − ( |Pronóstico − Real| ÷ Máx )',
       icon: Activity,
     },
     {
-      key: 'activePipelineValue',
+      key: 'activePipelineValue' as KpiKey,
       block: 'Cotizaciones',
-      title: 'Active Pipeline Value',
-      formula: '∑ Cotizaciones Vivas',
-      value: fmt(kpis.activePipelineValue, true),
-      badge: `${kpis.openDealsCount} Oportunidades`,
-      badgePositive: true,
+      blockLabel: 'COTIZACIONES',
+      title: 'Valor Total en Cartera',
+      mainValue: fmt(kpis.activePipelineValue, true),
+      badge: `${kpis.openDealsCount} Activas`,
+      badgeColor: 'bg-blue-500/15 text-blue-700 border-blue-500/40',
+      mathFormula: 'V = ∑ Cotizaciones Vigentes',
       icon: Briefcase,
     },
     {
-      key: 'weightedGrossMarginPct',
+      key: 'weightedGrossMarginPct' as KpiKey,
       block: 'Cotizaciones',
+      blockLabel: 'COTIZACIONES',
       title: 'Margen Bruto Ponderado',
-      formula: '∑ ( Margen $ × Prob ) ÷ Venta',
-      value: `${kpis.weightedGrossMarginPct.toFixed(1)}%`,
-      badge: kpis.weightedGrossMarginPct >= 20 ? 'Meta ≥20%' : 'Bajo',
-      badgePositive: kpis.weightedGrossMarginPct >= 20,
+      mainValue: `${kpis.weightedGrossMarginPct}%`,
+      badge: kpis.weightedGrossMarginPct >= 20 ? 'Sano (≥20%)' : 'Piso 18%',
+      badgeColor: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40',
+      mathFormula: 'M = ∑ ( Margenᵢ × Pondᵢ ) ÷ Total',
       icon: Percent,
     },
     {
-      key: 'averageSalesCycleDays',
+      key: 'quoteToCloseDays' as KpiKey,
       block: 'Cotizaciones',
-      title: 'Ciclo de Venta (Días)',
-      formula: '∑ Días a la OC ÷ Total',
-      value: `${kpis.quoteToCloseDays} días`,
-      badge: kpis.quoteToCloseDays <= 25 ? 'Ágil' : 'Consultivo',
-      badgePositive: kpis.quoteToCloseDays <= 25,
+      blockLabel: 'COTIZACIONES',
+      title: 'Ciclo de Cierre (Días)',
+      mainValue: `${kpis.quoteToCloseDays} días`,
+      badge: kpis.quoteToCloseDays <= 30 ? 'Ágil (≤30d)' : 'Lento (>30d)',
+      badgeColor:
+        kpis.quoteToCloseDays <= 30
+          ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
+          : 'bg-amber-500/15 text-amber-700 border-amber-500/40',
+      mathFormula: 'D = ∑ ( Fecha OC − Emisión ) ÷ n',
       icon: Clock,
     },
     {
-      key: 'winRatePct',
+      key: 'winRate' as KpiKey,
       block: 'Conversión',
-      title: 'Win Rate Comercial',
-      formula: 'Won ÷ ( Won + Lost ) × 100',
-      value: `${kpis.winRate.toFixed(1)}%`,
-      badge: `${kpis.wonDealsCount} Won / ${kpis.lostDealsCount} Lost`,
-      badgePositive: kpis.winRate >= 50,
+      blockLabel: 'CONVERSIÓN',
+      title: 'Tasa de Cierre (Éxito)',
+      mainValue: `${kpis.winRate}%`,
+      badge: `${kpis.wonDealsCount} Ganadas`,
+      badgeColor:
+        kpis.winRate >= 50
+          ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
+          : 'bg-amber-500/15 text-amber-700 border-amber-500/40',
+      mathFormula: 'T = Ganadas ÷ ( Ganadas + Perdidas )',
       icon: Award,
     },
     {
-      key: 'averageDealSizeWon',
+      key: 'averageDealSize' as KpiKey,
       block: 'Conversión',
-      title: 'Ticket Promedio Won',
-      formula: 'Facturado ÷ N° Facturas',
-      value: fmt(kpis.averageDealSizeWon, true),
-      badge: 'Por Operación',
-      badgePositive: true,
-      icon: BarChart3,
+      blockLabel: 'CONVERSIÓN',
+      title: 'Ticket Promedio Venta',
+      mainValue: fmt(kpis.averageDealSizeWon, true),
+      badge: `Abierto: ${fmt(kpis.averageDealSizeOpen, true)}`,
+      badgeColor: 'bg-blue-500/15 text-blue-700 border-blue-500/40',
+      mathFormula: 'X̄ = ∑ Facturación Ganada ÷ n',
+      icon: DollarSign,
     },
   ];
 
@@ -132,76 +144,90 @@ export const KpiCard: React.FC<Props> = ({
       : cards.filter((c) => c.block === selectedBlock);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {visibleCards.map((c) => {
         const Icon = c.icon;
-        const isSelected = activeKpi === c.key;
+        const isActive = activeKpi === c.key;
         return (
           <div
             key={c.key}
-            onClick={() => onSelectKpi(c.key)}
             role="button"
             tabIndex={0}
-            className={`group relative rounded-2xl p-4 sm:p-5 transition-all duration-200 border-2 cursor-pointer flex flex-col justify-between ${
-              isSelected
-                ? 'bg-[#2A5FFF]/10 border-[#2A5FFF] ring-4 ring-[#2A5FFF]/30 dark:bg-[#00B4D8]/15 dark:border-[#00B4D8] dark:ring-[#00B4D8]/40 shadow-xl scale-[1.02]'
-                : 'bg-white border-slate-200 hover:border-[#2A5FFF]/60 dark:bg-[#101D38] dark:border-slate-800 dark:hover:border-[#00B4D8]/60 shadow-sm'
+            onClick={() => onSelectKpi(c.key)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelectKpi(c.key);
+              }
+            }}
+            className={`group relative px-3.5 py-2.5 rounded-2xl transition-all duration-150 cursor-pointer select-none flex flex-col justify-between ${
+              isActive
+                ? 'bg-blue-50/70 dark:bg-[#132347] border-2 border-[#2A5FFF] shadow-md ring-2 ring-[#2A5FFF]/20'
+                : 'bg-white dark:bg-[#0E172E] border border-slate-200 dark:border-slate-800 hover:border-[#2A5FFF]'
             }`}
           >
+            {/* Cabecera Compacta */}
             <div>
-              {/* Header with Block Pill and Icon */}
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-xs font-mono uppercase tracking-wider px-2 py-0.5 rounded-md font-bold bg-slate-100 text-slate-700 dark:bg-[#070C1C] dark:text-[#00B4D8] border border-slate-300 dark:border-slate-700">
-                  {c.block}
+              <div className="flex items-center justify-between gap-1 mb-1">
+                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold">
+                  {c.blockLabel}
                 </span>
-                <div
-                  className={`p-2 rounded-xl transition ${
-                    isSelected
-                      ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
-                      : 'bg-slate-100 text-[#2A5FFF] dark:bg-[#070C1C] dark:text-[#00B4D8]'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${c.badgeColor}`}
+                  >
+                    {c.badge}
+                  </span>
+                  <div
+                    className={`p-1 rounded-lg ${
+                      isActive
+                        ? 'bg-[#2A5FFF] text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-[#2A5FFF] dark:text-[#00B4D8]'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
                 </div>
               </div>
 
-              {/* Title (Grande y legible para la jefa) */}
-              <h3 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
-                {c.title}
-              </h3>
-
-              {/* Primary Value (Número Gigante de Alto Impacto) */}
-              <div className="mt-2 flex items-baseline justify-between gap-2">
-                <span className="text-2xl sm:text-3xl lg:text-4xl font-serif font-black tracking-tight text-slate-900 dark:text-white">
-                  {c.value}
-                </span>
-                <span
-                  className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md ${
-                    c.badgePositive
-                      ? 'bg-emerald-500/15 text-emerald-700 dark:text-[#C6F432]'
-                      : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                  }`}
-                >
-                  {c.badge}
+              {/* Título y Valor Principal */}
+              <div className="flex items-baseline justify-between gap-2 my-1">
+                <h3 className="text-xs sm:text-sm font-serif font-bold text-slate-800 dark:text-slate-100 truncate">
+                  {c.title}
+                </h3>
+                <span className="text-xl sm:text-2xl font-serif font-black tracking-tight text-slate-900 dark:text-white shrink-0">
+                  {c.mainValue}
                 </span>
               </div>
             </div>
 
-            {/* FÓRMULA MATEMÁTICA DESTACADA (Modo Matemático) */}
-            <div className="mt-3.5 pt-2.5 border-t border-slate-200 dark:border-slate-800">
-              <div className="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white dark:bg-[#070C1C] border border-[#2A5FFF]/30 dark:border-[#00B4D8]/40 flex items-center justify-between gap-1 shadow-inner">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <Calculator className="w-3.5 h-3.5 text-[#00B4D8] shrink-0" />
-                  <span className="font-mono text-xs font-bold text-[#C6F432] truncate">
-                    {c.formula}
-                  </span>
-                </div>
-                {isSelected && (
-                  <span className="text-[9px] font-mono font-bold uppercase px-1 py-0.2 rounded bg-[#00B4D8] text-[#0B132B] shrink-0">
-                    Activo
-                  </span>
-                )}
+            {/* FÓRMULA EN CURSIVA GRANDE FULL MATEMÁTICO CON FONDO BLANCO */}
+            <div
+              className={`mt-1.5 px-2.5 py-1.5 rounded-xl bg-white border-2 transition-all flex items-center justify-between gap-1.5 shadow-sm ${
+                isActive
+                  ? 'border-[#2A5FFF] ring-2 ring-[#2A5FFF]/15'
+                  : 'border-slate-300 group-hover:border-[#2A5FFF]/60'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span
+                  style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+                  className="text-sm sm:text-base italic font-bold text-[#2A5FFF] shrink-0"
+                >
+                  ƒ(x):
+                </span>
+                <span
+                  style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+                  className="text-sm sm:text-[15px] italic font-bold text-slate-900 tracking-wide truncate"
+                >
+                  {c.mathFormula}
+                </span>
               </div>
+              {isActive && (
+                <span className="text-[9px] font-mono uppercase bg-[#2A5FFF] text-white px-1.5 py-0.5 rounded font-black shrink-0">
+                  ACTIVO
+                </span>
+              )}
             </div>
           </div>
         );

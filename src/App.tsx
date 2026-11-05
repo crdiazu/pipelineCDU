@@ -50,7 +50,7 @@ export function App() {
   const [currency, setCurrency] = useState<CurrencyCode>('CLP');
   const [exchangeRate] = useState<number>(DEFAULT_EXCHANGE_RATE);
   const [quotaClp, setQuotaClp] = useState<number>(DEFAULT_MONTHLY_QUOTA_CLP);
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(false);
   const [selectedDeal, setSelectedDeal] = useState<DealRow | null>(
     initialDeals[0] || null
   );
@@ -176,15 +176,15 @@ export function App() {
           (a, b) => (b.estimatedMarginPct || 0) - (a.estimatedMarginPct || 0)
         );
         break;
-      case 'winRatePct':
-      case 'averageDealSizeWon':
+      case 'winRate':
+      case 'averageDealSize':
         list.sort((a, b) => {
           if (a.status === 'Closed Won' && b.status !== 'Closed Won') return -1;
           if (b.status === 'Closed Won' && a.status !== 'Closed Won') return 1;
           return b.estimatedAmount - a.estimatedAmount;
         });
         break;
-      case 'averageSalesCycleDays':
+      case 'quoteToCloseDays':
         list.sort((a, b) => b.estimatedAmount - a.estimatedAmount);
         break;
       default:
@@ -193,6 +193,17 @@ export function App() {
     }
     return list.slice(0, 5);
   }, [periodFilteredDeals, activeKpi]);
+
+  const kpiSpanishLabels: Record<KpiKey, string> = {
+    weightedPipeline: 'Cartera Ponderada',
+    pipelineCoverage: 'Cobertura de Cuota',
+    forecastAccuracy: 'Precisión Pronóstico',
+    activePipelineValue: 'Valor en Cartera',
+    weightedGrossMarginPct: 'Margen Bruto',
+    quoteToCloseDays: 'Ciclo de Cierre',
+    winRate: 'Tasa de Éxito',
+    averageDealSize: 'Ticket Promedio',
+  };
 
   const fmt = (val: number, compact = false) =>
     formatCurrency(val, currency, exchangeRate, compact);
@@ -288,38 +299,38 @@ export function App() {
   const navItems = [
     {
       id: 'dashboard',
-      label: 'Vista General',
+      label: 'Panel Principal',
       shortLabel: 'Inicio',
       icon: LayoutDashboard,
       badge: '8 KPIs',
     },
     {
       id: 'kanban',
-      label: 'Pipeline Kanban',
-      shortLabel: 'Kanban',
+      label: 'Tablero de Etapas',
+      shortLabel: 'Etapas',
       icon: Kanban,
       badge: `${kpis.openDealsCount}`,
     },
     {
       id: 'cotizaciones',
-      label: 'Matriz Cotizaciones',
+      label: 'Matriz de Cotizaciones',
       shortLabel: 'Cotiz.',
       icon: FileSpreadsheet,
       badge: `${periodFilteredDeals.length}`,
     },
     {
       id: 'forecast',
-      label: 'Forecast & Cuentas',
+      label: 'Pronóstico y Cuentas',
       shortLabel: 'Cuentas',
       icon: TrendingUp,
-      badge: 'Editorial',
+      badge: '24M',
     },
     {
       id: 'agent',
-      label: 'Agente IA Comercial',
-      shortLabel: 'Agente IA',
+      label: 'Asistente IA Comercial',
+      shortLabel: 'IA',
       icon: Bot,
-      badge: 'AI SDK',
+      badge: 'IA',
     },
   ] as const;
 
@@ -332,30 +343,30 @@ export function App() {
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen flex flex-col lg:flex-row bg-[#F5F1E8] text-[#101725] dark:bg-[#0B132B] dark:text-slate-100 font-sans transition-colors duration-200 pb-16 lg:pb-0">
+      <div className="min-h-screen flex flex-col lg:flex-row bg-[#F8FAFC] text-[#101725] dark:bg-[#0B132B] dark:text-slate-100 font-sans transition-colors duration-200 pb-16 lg:pb-0">
         {/* Left Navigation Sidebar (Desktop lg+) */}
-        <aside className="w-64 shrink-0 border-r border-[#DDD4C5] dark:border-slate-800/80 bg-[#FFFDF8] dark:bg-[#070C1C] flex-col justify-between p-4 hidden lg:flex sticky top-0 h-screen overflow-y-auto">
+        <aside className="w-60 shrink-0 border-r border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#070C1C] flex-col justify-between p-3.5 hidden lg:flex sticky top-0 h-screen overflow-y-auto">
           <div>
             {/* Brand Header */}
-            <div className="pb-4 mb-5 border-b border-[#DDD4C5] dark:border-slate-800/80 flex items-center justify-between">
+            <div className="pb-3 mb-3.5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#00B4D8] animate-pulse" />
-                  <span className="font-mono text-xs uppercase tracking-widest text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
+                  <div className="w-2 h-2 rounded-full bg-[#2A5FFF] animate-pulse" />
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
                     TECNOVOA B2B
                   </span>
                 </div>
-                <h1 className="font-serif text-xl font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
-                  Forecast CDU
+                <h1 className="font-serif text-lg font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
+                  Pronóstico CDU
                 </h1>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  KAM: Cristian Díaz U.
+                  Ejecutivo: Cristian Díaz U.
                 </p>
               </div>
             </div>
 
             {/* Navigation Items */}
-            <nav className="space-y-1.5">
+            <nav className="space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = activeTab === item.id;
@@ -363,13 +374,13 @@ export function App() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
                       active
                         ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] border border-transparent dark:border-[#00B4D8]/30 shadow-sm'
-                        : 'text-slate-600 hover:bg-slate-200/60 dark:text-slate-400 dark:hover:bg-[#101D38]'
+                        : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-[#101D38]'
                     }`}
                   >
-                    <span className="flex items-center gap-2.5">
+                    <span className="flex items-center gap-2">
                       <Icon className="w-4 h-4" />
                       {item.label}
                     </span>
@@ -377,7 +388,7 @@ export function App() {
                       className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                         active
                           ? 'bg-white/20 text-white dark:bg-[#00B4D8]/20 dark:text-[#00B4D8]'
-                          : 'bg-slate-200/70 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                       }`}
                     >
                       {item.badge}
@@ -388,16 +399,16 @@ export function App() {
             </nav>
 
             {/* Top 5 Negocios según el filtro del KPI activo */}
-            <div className="mt-5 p-3 rounded-xl border border-[#DDD4C5] dark:border-slate-800 bg-[#F5F1E8]/70 dark:bg-[#101D38]/70">
-              <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-300 dark:border-slate-800">
+            <div className="mt-4 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-[#101D38]/70">
+              <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <Award className="w-4 h-4 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
-                  <span className="text-xs font-mono uppercase font-bold text-slate-800 dark:text-white truncate">
-                    Top 5 · {activeKpi}
+                  <Award className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
+                  <span className="text-[11px] font-mono uppercase font-bold text-slate-800 dark:text-white truncate">
+                    Top 5 · {kpiSpanishLabels[activeKpi]}
                   </span>
                 </div>
                 <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-[#C6F432] font-bold shrink-0">
-                  {top5Deals.length} deals
+                  {top5Deals.length} neg.
                 </span>
               </div>
 
@@ -408,14 +419,14 @@ export function App() {
                     <div
                       key={d.id}
                       onClick={() => setSelectedDeal(d)}
-                      className={`p-2 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${
+                      className={`p-1.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-1.5 ${
                         isSelected
-                          ? 'border-[#2A5FFF] bg-[#2A5FFF]/15 dark:border-[#00B4D8] dark:bg-[#00B4D8]/20 shadow-sm'
-                          : 'border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#070C1C]/80 hover:border-slate-400'
+                          ? 'border-[#2A5FFF] bg-[#2A5FFF]/10 dark:border-[#00B4D8] dark:bg-[#00B4D8]/20 shadow-sm'
+                          : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#070C1C]/80 hover:border-slate-400'
                       }`}
                     >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-xs font-mono font-black text-slate-400 w-4">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="text-[11px] font-mono font-black text-slate-400 w-4">
                           #{idx + 1}
                         </span>
                         <ClientLogo client={d.client} size="sm" />
@@ -434,7 +445,7 @@ export function App() {
                           {fmt(d.estimatedAmount, true)}
                         </span>
                         <span className="text-[10px] font-mono font-semibold text-emerald-600 dark:text-[#C6F432]">
-                          {d.probability}% prob
+                          {d.probability}% prob.
                         </span>
                       </div>
                     </div>
@@ -443,14 +454,16 @@ export function App() {
               </div>
 
               {selectedDeal && (
-                <div className="mt-2.5 pt-2 border-t border-slate-300 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-300">
-                  <span className="text-[10px] text-slate-400 uppercase block">Seleccionado:</span>
+                <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                  <span className="text-[9px] text-slate-400 uppercase block">Seleccionado:</span>
                   <span className="font-bold text-slate-900 dark:text-white truncate block">
                     {selectedDeal.client} · {selectedDeal.opportunity}
                   </span>
-                  <div className="flex justify-between mt-1 text-[10px]">
+                  <div className="flex justify-between mt-0.5 text-[10px]">
                     <span>Neto: {fmt(selectedDeal.estimatedAmount, false)}</span>
-                    <span className="text-[#00B4D8] font-bold">W: {fmt(selectedDeal.weightedPipeline, false)}</span>
+                    <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
+                      Pond: {fmt(selectedDeal.weightedPipeline, false)}
+                    </span>
                   </div>
                 </div>
               )}
@@ -550,30 +563,30 @@ export function App() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Responsive Editorial Header */}
-          <header className="sticky top-0 z-20 backdrop-blur-md bg-[#FFFDF8]/90 dark:bg-[#0B132B]/90 border-b border-[#DDD4C5] dark:border-slate-800/80 px-3.5 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-2.5">
+          <header className="sticky top-0 z-20 backdrop-blur-md bg-white/95 dark:bg-[#0B132B]/90 border-b border-slate-200 dark:border-slate-800/80 px-3.5 sm:px-5 py-2 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2.5 min-w-0">
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101D38] text-slate-700 dark:text-slate-200"
+                className="lg:hidden p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101D38] text-slate-700 dark:text-slate-200"
                 aria-label="Abrir menú"
               >
                 <Menu className="w-4 h-4" />
               </button>
 
               <div className="min-w-0">
-                <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 block truncate">
+                <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 block truncate">
                   TECNOVOA · UNIDAD COMERCIAL B2B
                 </span>
-                <h2 className="text-base sm:text-xl font-serif font-bold text-slate-900 dark:text-white truncate">
-                  Dashboard de Ventas & Forecast CDU
+                <h2 className="text-sm sm:text-lg font-serif font-bold text-slate-900 dark:text-white truncate">
+                  Panel de Ventas y Pronóstico Comercial CDU
                 </h2>
               </div>
             </div>
 
             {/* Right Controls: Period Filter, Currency Switch, Theme Toggle, Quick CTA */}
-            <div className="flex flex-wrap items-center gap-2 ml-auto">
+            <div className="flex flex-wrap items-center gap-1.5 ml-auto">
               {/* Period Filter Pill */}
-              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#101D38] px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#101D38] px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700">
                 <Calendar className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
                 <select
                   value={selectedPeriod}
@@ -593,10 +606,10 @@ export function App() {
               </div>
 
               {/* Currency Switch */}
-              <div className="flex items-center bg-slate-100 dark:bg-[#101D38] p-0.5 sm:p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-mono">
+              <div className="flex items-center bg-slate-100 dark:bg-[#101D38] p-0.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-mono">
                 <button
                   onClick={() => setCurrency('CLP')}
-                  className={`px-2 py-1 rounded-lg font-semibold transition ${
+                  className={`px-2 py-0.5 rounded-lg font-semibold transition ${
                     currency === 'CLP'
                       ? 'bg-white text-slate-900 shadow-sm dark:bg-[#00B4D8] dark:text-[#0B132B]'
                       : 'text-slate-500 dark:text-slate-400'
@@ -606,7 +619,7 @@ export function App() {
                 </button>
                 <button
                   onClick={() => setCurrency('USD')}
-                  className={`px-2 py-1 rounded-lg font-semibold transition ${
+                  className={`px-2 py-0.5 rounded-lg font-semibold transition ${
                     currency === 'USD'
                       ? 'bg-white text-slate-900 shadow-sm dark:bg-[#00B4D8] dark:text-[#0B132B]'
                       : 'text-slate-500 dark:text-slate-400'
@@ -619,8 +632,8 @@ export function App() {
               {/* Dark/Light Switch */}
               <button
                 onClick={toggleTheme}
-                title="Alternar Modo Editorial Claro / Oscuro TECNOVOA"
-                className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101D38] text-slate-700 dark:text-slate-200 hover:border-[#00B4D8] transition"
+                title="Alternar Modo Claro / Oscuro"
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#101D38] text-slate-700 dark:text-slate-200 hover:border-[#2A5FFF] transition"
               >
                 {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
               </button>
@@ -628,9 +641,9 @@ export function App() {
               {/* Primary CTA */}
               <button
                 onClick={() => setShowNewModal(true)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B] hover:opacity-95 transition shadow-sm"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B] hover:opacity-95 transition shadow-sm"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Nueva Cotización</span>
               </button>
             </div>
@@ -655,84 +668,25 @@ export function App() {
             totalDeals={clientFilteredDeals.length}
           />
 
-          {/* Main Workspace Body - Full-Width Layout Utilizing Space */}
-          <main className="p-3 sm:p-6 space-y-6 w-full">
+          {/* Main Workspace Body - Compact Single-Screen Layout */}
+          <main className="p-3 sm:p-4 space-y-3.5 w-full">
             {activeTab === 'dashboard' && (
               <>
-                {/* Top Zone: 2 Modern Synchronized Charts Side by Side */}
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                  {/* Gráfico 1: Curva Neón Difuminada */}
-                  <ForecastChart
-                    monthlyData={monthlySeries}
-                    currency={currency}
-                    exchangeRate={exchangeRate}
-                    quotaClp={quotaClp}
-                    activeKpi={activeKpi}
-                    rangeStartIdx={safeStartIdx}
-                    rangeEndIdx={safeEndIdx}
-                    defaultChartType="area"
-                    customTitle="✨ Gráfico 1: Curva Neón Difuminada (Tendencia & Ponderación)"
-                    customSubtitle="Proyección analítica continua con ambient glow y puntos de inflexión frente a la meta"
-                  />
-
-                  {/* Gráfico 2: Barras Ejecutivas de Alto Contraste */}
-                  <ForecastChart
-                    monthlyData={monthlySeries}
-                    currency={currency}
-                    exchangeRate={exchangeRate}
-                    quotaClp={quotaClp}
-                    activeKpi={activeKpi}
-                    rangeStartIdx={safeStartIdx}
-                    rangeEndIdx={safeEndIdx}
-                    defaultChartType="stacked"
-                    customTitle="📊 Gráfico 2: Barras Ejecutivas de Desglose (Won vs Commit vs Best Case)"
-                    customSubtitle="Composición mensual por nivel de certeza: Facturado (Won), Commit firme y Best Case"
-                  />
-                </div>
-
-                {/* Section 2: Matriz Interactiva de 8 KPIs Estratégicos (2/3) + Inspector Matemático (1/3) */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
-                  <div className="xl:col-span-2 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
-                          Matriz Interactiva de 8 KPIs Estratégicos (Toca un KPI para actualizar los gráficos e inspector)
-                        </h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Métricas calculadas en vivo sobre la ventana activa ({activePeriodLabel})
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-1 bg-white dark:bg-[#101D38] p-1 rounded-xl border border-[#DDD4C5] dark:border-slate-800 text-xs overflow-x-auto max-w-full">
-                        {(['Todos', 'Forecast', 'Cotizaciones', 'Conversión'] as const).map(
-                          (b) => (
-                            <button
-                              key={b}
-                              onClick={() => setKpiBlockFilter(b)}
-                              className={`px-3 py-1 rounded-lg font-medium transition whitespace-nowrap ${
-                                kpiBlockFilter === b
-                                  ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
-                                  : 'text-slate-600 dark:text-slate-400'
-                              }`}
-                            >
-                              {b}
-                            </button>
-                          )
-                        )}
-                      </div>
-                    </div>
-
-                    <KpiCard
-                      kpis={kpis}
+                {/* Fila 1: Gráfico Principal con 4 Botones (2/3) + Inspector Matemático en Cursiva con Fondo Blanco (1/3) */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3.5 items-stretch">
+                  <div className="xl:col-span-2">
+                    <ForecastChart
+                      monthlyData={monthlySeries}
                       currency={currency}
                       exchangeRate={exchangeRate}
-                      selectedBlock={kpiBlockFilter}
+                      quotaClp={quotaClp}
                       activeKpi={activeKpi}
-                      onSelectKpi={(key) => setActiveKpi(key)}
+                      rangeStartIdx={safeStartIdx}
+                      rangeEndIdx={safeEndIdx}
                     />
                   </div>
 
-                  {/* Right Dynamic KPI Math Inspector Card (Cambia al hacer clic en cualquier KPI) */}
+                  {/* Tarjeta Derecha: Inspector Matemático Dinámico */}
                   <div className="xl:col-span-1">
                     <KpiMathInspector
                       activeKpi={activeKpi}
@@ -743,6 +697,49 @@ export function App() {
                       activePeriodLabel={activePeriodLabel}
                     />
                   </div>
+                </div>
+
+                {/* Fila 2: Matriz de 8 Indicadores Estratégicos con Fórmulas en Cursiva sobre Fondo Blanco */}
+                <div>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div>
+                      <h3 className="text-sm sm:text-base font-serif font-bold text-slate-900 dark:text-white">
+                        Matriz de 8 Indicadores Estratégicos (Haz clic en cualquier tarjeta para ver su gráfico y fórmula)
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-white dark:bg-[#101D38] p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto max-w-full">
+                      {(
+                        [
+                          { id: 'Todos', label: 'Todos' },
+                          { id: 'Forecast', label: 'Pronóstico' },
+                          { id: 'Cotizaciones', label: 'Cotizaciones' },
+                          { id: 'Conversión', label: 'Conversión' },
+                        ] as const
+                      ).map((b) => (
+                        <button
+                          key={b.id}
+                          onClick={() => setKpiBlockFilter(b.id)}
+                          className={`px-2.5 py-0.5 rounded-lg font-medium transition whitespace-nowrap ${
+                            kpiBlockFilter === b.id
+                              ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
+                              : 'text-slate-600 dark:text-slate-400'
+                          }`}
+                        >
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <KpiCard
+                    kpis={kpis}
+                    currency={currency}
+                    exchangeRate={exchangeRate}
+                    selectedBlock={kpiBlockFilter}
+                    activeKpi={activeKpi}
+                    onSelectKpi={(key) => setActiveKpi(key)}
+                  />
                 </div>
 
                 {/* Section 3: Interactive Responsive Data Table */}
