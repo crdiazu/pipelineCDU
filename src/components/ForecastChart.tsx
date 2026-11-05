@@ -5,8 +5,6 @@ import {
   BarChart2,
   TrendingUp,
   Layers,
-  SlidersHorizontal,
-  RotateCcw,
 } from 'lucide-react';
 
 interface Props {
@@ -676,111 +674,6 @@ export const ForecastChart: React.FC<Props> = ({
           </div>
         </div>
       )}
-
-      {/* Interactive Timeline Brush / Range Scrubber (Desde - Hasta) */}
-      <div className="mt-3 pt-3 border-t border-slate-200/80 dark:border-slate-800/80">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs">
-            <SlidersHorizontal className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8]" />
-            <span className="font-semibold text-slate-700 dark:text-slate-200">
-              Línea de Tiempo de Análisis (Desde / Hasta):
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-mono uppercase text-slate-400">Desde:</span>
-              <select
-                value={safeStart}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  onRangeChange(val, Math.max(val, safeEnd));
-                }}
-                className="bg-transparent font-mono font-semibold text-slate-900 dark:text-[#00B4D8] focus:outline-none cursor-pointer"
-              >
-                {monthlyData.map((m, idx) => (
-                  <option
-                    key={m.month}
-                    value={idx}
-                    disabled={idx > safeEnd}
-                    className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white"
-                  >
-                    {m.month}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <span className="text-slate-400 font-mono">→</span>
-
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-mono uppercase text-slate-400">Hasta:</span>
-              <select
-                value={safeEnd}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  onRangeChange(Math.min(safeStart, val), val);
-                }}
-                className="bg-transparent font-mono font-semibold text-slate-900 dark:text-[#C6F432] focus:outline-none cursor-pointer"
-              >
-                {monthlyData.map((m, idx) => (
-                  <option
-                    key={m.month}
-                    value={idx}
-                    disabled={idx < safeStart}
-                    className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white"
-                  >
-                    {m.month}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(safeStart > 0 || safeEnd < monthlyData.length - 1) && (
-              <button
-                onClick={() => onRangeChange(0, monthlyData.length - 1)}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800"
-                title="Restablecer rango completo"
-              >
-                <RotateCcw className="w-3 h-3" /> Todo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Visual Timeline Pill Track */}
-        <div className="mt-2.5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
-          {monthlyData.map((m, idx) => {
-            const inRange = idx >= safeStart && idx <= safeEnd;
-            const isBoundary = idx === safeStart || idx === safeEnd;
-            return (
-              <button
-                key={m.month}
-                type="button"
-                onClick={() => {
-                  if (idx < safeStart) onRangeChange(idx, safeEnd);
-                  else if (idx > safeEnd) onRangeChange(safeStart, idx);
-                  else if (safeStart === safeEnd) {
-                    onRangeChange(0, monthlyData.length - 1);
-                  } else {
-                    onRangeChange(idx, idx);
-                  }
-                }}
-                className={`py-1 px-1.5 rounded-md text-[10px] font-mono transition border text-center truncate ${
-                  isBoundary
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] dark:border-[#00B4D8] font-bold shadow-sm'
-                    : inRange
-                    ? 'bg-[#2A5FFF]/10 text-[#2A5FFF] border-[#2A5FFF]/30 dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] dark:border-[#00B4D8]/30 font-medium'
-                    : 'bg-slate-100/70 text-slate-400 border-transparent dark:bg-[#0B132B]/50 dark:text-slate-600'
-                }`}
-                title={`Clic para ajustar ventana a ${m.month}`}
-              >
-                {shortMonthName(m.month)}
-              </button>
-            );
-          })}
-        </div>
-      </div>
     </div>
   );
 };
