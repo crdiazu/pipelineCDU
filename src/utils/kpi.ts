@@ -228,6 +228,33 @@ export function calculateKpis(
   };
 }
 
+export const ALL_MONTHS_HORIZON: { month: string; sortKey: string }[] = [
+  { month: 'Enero 2026', sortKey: '2026-01' },
+  { month: 'Febrero 2026', sortKey: '2026-02' },
+  { month: 'Marzo 2026', sortKey: '2026-03' },
+  { month: 'Abril 2026', sortKey: '2026-04' },
+  { month: 'Mayo 2026', sortKey: '2026-05' },
+  { month: 'Junio 2026', sortKey: '2026-06' },
+  { month: 'Julio 2026', sortKey: '2026-07' },
+  { month: 'Agosto 2026', sortKey: '2026-08' },
+  { month: 'Septiembre 2026', sortKey: '2026-09' },
+  { month: 'Octubre 2026', sortKey: '2026-10' },
+  { month: 'Noviembre 2026', sortKey: '2026-11' },
+  { month: 'Diciembre 2026', sortKey: '2026-12' },
+  { month: 'Enero 2027', sortKey: '2027-01' },
+  { month: 'Febrero 2027', sortKey: '2027-02' },
+  { month: 'Marzo 2027', sortKey: '2027-03' },
+  { month: 'Abril 2027', sortKey: '2027-04' },
+  { month: 'Mayo 2027', sortKey: '2027-05' },
+  { month: 'Junio 2027', sortKey: '2027-06' },
+  { month: 'Julio 2027', sortKey: '2027-07' },
+  { month: 'Agosto 2027', sortKey: '2027-08' },
+  { month: 'Septiembre 2027', sortKey: '2027-09' },
+  { month: 'Octubre 2027', sortKey: '2027-10' },
+  { month: 'Noviembre 2027', sortKey: '2027-11' },
+  { month: 'Diciembre 2027', sortKey: '2027-12' },
+];
+
 export function getMonthlySeries(
   allData: DealRow[],
   quotaClp: number = DEFAULT_MONTHLY_QUOTA_CLP
@@ -240,6 +267,35 @@ export function getMonthlySeries(
       _cycleCount: number;
     }
   >();
+
+  // Initialize all 24 continuous months from Enero 2026 to Diciembre 2027
+  ALL_MONTHS_HORIZON.forEach(({ month, sortKey }) => {
+    map.set(month, {
+      month,
+      sortKey,
+      pipelineOpen: 0,
+      commit: 0,
+      bestCase: 0,
+      forecast: 0,
+      weighted: 0,
+      closedWon: 0,
+      closedLost: 0,
+      quota: quotaClp,
+      dealsCount: 0,
+      openCount: 0,
+      wonCount: 0,
+      lostCount: 0,
+      coverageRatio: 0,
+      accuracyPct: 90,
+      marginPct: 21.5,
+      avgCycleDays: 18,
+      winRatePct: 0,
+      avgDealSize: 0,
+      _marginWeightedSum: 0,
+      _cycleSum: 0,
+      _cycleCount: 0,
+    });
+  });
 
   allData.forEach((d) => {
     if (!d.closeMonth) return;

@@ -31,6 +31,7 @@ import KanbanBoard from './components/KanbanBoard';
 import { ClientLogo, VendorBadge } from './components/ClientLogo';
 import CduAgentDrawer from './components/CduAgentDrawer';
 import PersistentTimeline from './components/PersistentTimeline';
+import ClientTimeAnalysis from './components/ClientTimeAnalysis';
 
 const initialDeals = loadPipeline();
 
@@ -62,14 +63,34 @@ export function App() {
   const [newProb, setNewProb] = useState('60');
   const [newCategory, setNewCategory] = useState<'Commit' | 'Best Case' | 'Pipeline'>('Best Case');
 
+  const [selectedClient, setSelectedClient] = useState<string>('Todos');
+
+  // Client aggregation for filter dropdown and analysis
+  const clientStatsList = useMemo(() => {
+    const map = new Map<string, { client: string; count: number; won: number; open: number }>();
+    deals.forEach((d) => {
+      const existing = map.get(d.client) || { client: d.client, count: 0, won: 0, open: 0 };
+      existing.count += 1;
+      if (d.status === 'Closed Won') existing.won += d.estimatedAmount;
+      if (d.status === 'Abierta') existing.open += d.estimatedAmount;
+      map.set(d.client, existing);
+    });
+    return Array.from(map.values()).sort((a, b) => (b.won + b.open) - (a.won + a.open));
+  }, [deals]);
+
+  const clientFilteredDeals = useMemo(() => {
+    if (selectedClient === 'Todos') return deals;
+    return deals.filter((d) => d.client === selectedClient);
+  }, [deals, selectedClient]);
+
   const monthlySeries = useMemo(
-    () => getMonthlySeries(deals, quotaClp),
-    [deals, quotaClp]
+    () => getMonthlySeries(clientFilteredDeals, quotaClp),
+    [clientFilteredDeals, quotaClp]
   );
 
-  // Timeline Range State (Desde / Hasta indices over monthlySeries)
+  // Timeline Range State (Desde / Hasta indices over monthlySeries, default covering all 24 months)
   const [rangeStartIdx, setRangeStartIdx] = useState<number>(0);
-  const [rangeEndIdx, setRangeEndIdx] = useState<number>(10);
+  const [rangeEndIdx, setRangeEndIdx] = useState<number>(23);
 
   const safeStartIdx = Math.max(
     0,
@@ -109,26 +130,26 @@ export function App() {
   const kpis = useMemo(
     () =>
       calculateKpis(
-        deals,
+        clientFilteredDeals,
         selectedPeriod,
         quotaClp,
         rangeSortStart,
         rangeSortEnd
       ),
-    [deals, selectedPeriod, quotaClp, rangeSortStart, rangeSortEnd]
+    [clientFilteredDeals, selectedPeriod, quotaClp, rangeSortStart, rangeSortEnd]
   );
 
   const periodFilteredDeals = useMemo(() => {
     if (selectedPeriod !== 'Todos') {
-      return deals.filter((d) => d.closeMonth === selectedPeriod);
+      return clientFilteredDeals.filter((d) => d.closeMonth === selectedPeriod);
     }
-    return deals.filter((d) => {
+    return clientFilteredDeals.filter((d) => {
       const k = d.closeMonthSort || '9999-99';
       if (rangeSortStart && k < rangeSortStart) return false;
       if (rangeSortEnd && k > rangeSortEnd) return false;
       return true;
     });
-  }, [deals, selectedPeriod, rangeSortStart, rangeSortEnd]);
+  }, [clientFilteredDeals, selectedPeriod, rangeSortStart, rangeSortEnd]);
 
   const fmt = (val: number, compact = false) =>
     formatCurrency(val, currency, exchangeRate, compact);
@@ -564,9 +585,12 @@ export function App() {
             }}
             selectedPeriod={selectedPeriod}
             onSelectPeriod={(p) => setSelectedPeriod(p)}
+            selectedClient={selectedClient}
+            onSelectClient={(c) => setSelectedClient(c)}
+            clientList={clientStatsList}
             currency={currency}
             exchangeRate={exchangeRate}
-            totalDeals={deals.length}
+            totalDeals={clientFilteredDeals.length}
           />
 
           {/* Main Workspace Body */}
@@ -954,81 +978,14 @@ export function App() {
                   }}
                 />
 
-                {/* Editorial Account Hierarchy Matrix with Client Logos & Vendor Badges */}
-                <div className="rounded-xl p-4 sm:p-5 border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm">
-                  <div className="mb-4">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#2A5FFF] dark:text-[#00B4D8] font-semibold">
-                      Jerarquía Corporativa de Cartera
-                    </span>
-                    <h3 className="text-lg font-serif font-bold text-slate-900 dark:text-white mt-0.5">
-                      Concentración de Pipeline y Weighted Forecast por Cuenta Clave
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {clientGroups.map((cg, idx) => {
-                      const maxClient = clientGroups[0]?.total || 1;
-                      const barPct = Math.round((cg.total / maxClient) * 100);
-                      return (
-                        <div
-                          key={cg.client}
-                          className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#0B132B] flex flex-col justify-between"
-                        >
-                          <div>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <ClientLogo client={cg.client} size="lg" />
-                                <div className="min-w-0">
-                                  <span className="text-xs font-serif font-bold text-slate-900 dark:text-white block truncate">
-                                    #{idx + 1} {cg.client}
-                                  </span>
-                                  <span className="text-[10px] font-mono text-slate-400">
-                                    Top: {cg.topForecast}
-                                  </span>
-                                </div>
-                              </div>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 dark:bg-[#101D38] text-slate-700 dark:text-slate-300 shrink-0">
-                                {cg.count} {cg.count === 1 ? 'deal' : 'deals'}
-                              </span>
-                            </div>
-
-                            <div className="mt-3 flex items-baseline justify-between">
-                              <div>
-                                <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                                  Pipeline Bruto
-                                </span>
-                                <span className="text-base font-mono font-bold text-slate-900 dark:text-white">
-                                  {fmt(cg.total, false)}
-                                </span>
-                              </div>
-                              <div className="text-right">
-                                <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                                  Weighted
-                                </span>
-                                <span className="text-sm font-mono font-semibold text-emerald-700 dark:text-[#C6F432]">
-                                  {fmt(cg.weighted, false)}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 mt-2.5 overflow-hidden">
-                              <div
-                                style={{ width: `${Math.max(6, barPct)}%` }}
-                                className="h-full bg-[#00B4D8] rounded-full"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-wrap items-center gap-1.5">
-                            {Array.from(cg.brands).map((b) => (
-                              <VendorBadge key={b} brand={b} />
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* Comprehensive Client Time Analysis (Matriz Temporal de Clientes 2026-2027) */}
+                <ClientTimeAnalysis
+                  deals={deals}
+                  selectedClient={selectedClient}
+                  onSelectClient={(c) => setSelectedClient(c)}
+                  currency={currency}
+                  exchangeRate={exchangeRate}
+                />
               </div>
             )}
 

@@ -639,7 +639,11 @@ export const ForecastChart: React.FC<Props> = ({
                   x={cx}
                   y={svgHeight - 10}
                   textAnchor="middle"
-                  className={`text-[11px] font-mono ${
+                  className={`${
+                    visibleData.length > 14
+                      ? 'text-[8.5px] sm:text-[9.5px]'
+                      : 'text-[10px] sm:text-[11px]'
+                  } font-mono ${
                     isHov
                       ? 'fill-[#2A5FFF] dark:fill-[#00B4D8] font-bold'
                       : 'fill-slate-500 dark:fill-slate-400'

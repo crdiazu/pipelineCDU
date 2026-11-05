@@ -7,6 +7,8 @@ import {
   Download,
   CheckCircle2,
   TrendingUp,
+  Users,
+  X,
 } from 'lucide-react';
 import { MonthlySummary } from '../utils/kpi';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
@@ -18,6 +20,9 @@ export interface PersistentTimelineProps {
   onRangeChange: (start: number, end: number) => void;
   selectedPeriod: string;
   onSelectPeriod: (period: string) => void;
+  selectedClient: string;
+  onSelectClient: (client: string) => void;
+  clientList: { client: string; count: number; won: number; open: number }[];
   currency: CurrencyCode;
   exchangeRate: number;
   totalDeals: number;
@@ -46,6 +51,9 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
   onRangeChange,
   selectedPeriod,
   onSelectPeriod,
+  selectedClient,
+  onSelectClient,
+  clientList,
   currency,
   exchangeRate,
   totalDeals,
@@ -59,6 +67,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
   const idxOct2026 = monthlySeries.findIndex((m) => m.month === 'Octubre 2026');
   const idxNov2026 = monthlySeries.findIndex((m) => m.month === 'Noviembre 2026');
   const idxJan2027 = monthlySeries.findIndex((m) => m.month === 'Enero 2027');
+  const idxDec2027 = monthlySeries.findIndex((m) => m.month === 'Diciembre 2027');
 
   const isFullRange =
     selectedPeriod === 'Todos' && safeStart === 0 && safeEnd === monthlySeries.length - 1;
@@ -66,15 +75,15 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
     selectedPeriod === 'Todos' &&
     safeStart === (idxJan2026 >= 0 ? idxJan2026 : 0) &&
     safeEnd === (idxDec2026 >= 0 ? idxDec2026 : safeEnd);
+  const isYear2027 =
+    selectedPeriod === 'Todos' &&
+    safeStart === (idxJan2027 >= 0 ? idxJan2027 : safeStart) &&
+    safeEnd === (idxDec2027 >= 0 ? idxDec2027 : monthlySeries.length - 1);
   const isQ4 =
     selectedPeriod === 'Todos' &&
     safeStart === (idxOct2026 >= 0 ? idxOct2026 : safeStart) &&
     safeEnd === (idxDec2026 >= 0 ? idxDec2026 : safeEnd);
   const isNovCurrent = selectedPeriod === 'Noviembre 2026';
-  const isProj2027 =
-    selectedPeriod === 'Todos' &&
-    safeStart === (idxJan2027 >= 0 ? idxJan2027 : safeStart) &&
-    safeEnd === monthlySeries.length - 1;
 
   const currentWindowLabel =
     selectedPeriod !== 'Todos'
@@ -109,10 +118,10 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
   return (
     <div className="sticky top-[53px] sm:top-[57px] z-20 backdrop-blur-md bg-[#FFFDF8]/95 dark:bg-[#070C1C]/95 border-b border-[#DDD4C5] dark:border-slate-800/90 px-3 sm:px-6 py-2 shadow-sm transition-colors">
       <div className="flex flex-col gap-2">
-        {/* Top Control Bar: Title, Window Indicator & Quick Presets */}
+        {/* Top Control Bar: Title, Client Filter, Window Indicator & Quick Presets */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          {/* Left: Indicator & Window */}
-          <div className="flex items-center gap-2">
+          {/* Left: Indicator, Window & Global Client Filter */}
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#2A5FFF]/10 text-[#2A5FFF] dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] font-semibold">
               <SlidersHorizontal className="w-3.5 h-3.5" />
               <span className="text-[11px] font-mono uppercase tracking-wider hidden sm:inline">
@@ -120,16 +129,50 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
               </span>
             </div>
 
+            {/* Client Filter Dropdown */}
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#101D38] px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700">
+              <Users className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
+              <select
+                value={selectedClient}
+                onChange={(e) => onSelectClient(e.target.value)}
+                className="bg-transparent font-sans font-semibold text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer max-w-[130px] sm:max-w-[180px] truncate"
+              >
+                <option value="Todos" className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white">
+                  Todos los Clientes ({clientList.length})
+                </option>
+                {clientList.map((c) => (
+                  <option
+                    key={c.client}
+                    value={c.client}
+                    className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white"
+                  >
+                    {c.client} ({c.count} ops)
+                  </option>
+                ))}
+              </select>
+              {selectedClient !== 'Todos' && (
+                <button
+                  type="button"
+                  onClick={() => onSelectClient('Todos')}
+                  title="Limpiar filtro de cliente"
+                  className="p-0.5 rounded text-slate-400 hover:text-rose-500"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Window Indicator */}
             <div className="flex items-center gap-1.5 font-mono text-[11px]">
-              <span className="text-slate-500 dark:text-slate-400">Ventana:</span>
+              <span className="text-slate-400 hidden md:inline">Ventana:</span>
               <span className="font-bold text-slate-900 dark:text-white px-2 py-0.5 rounded bg-slate-200/70 dark:bg-[#101D38] border border-slate-300/60 dark:border-slate-700">
                 {currentWindowLabel}
               </span>
-              <span className="text-emerald-700 dark:text-[#C6F432] font-semibold hidden md:inline ml-1">
+              <span className="text-emerald-700 dark:text-[#C6F432] font-semibold hidden lg:inline ml-1">
                 Won: {fmt(activeWindowMetrics.won)}
               </span>
               {activeWindowMetrics.pipe > 0 && (
-                <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-semibold hidden md:inline">
+                <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-semibold hidden lg:inline">
                   · Pipe: {fmt(activeWindowMetrics.pipe)}
                 </span>
               )}
@@ -171,6 +214,23 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
               </button>
             )}
 
+            {idxJan2027 >= 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSelectPeriod('Todos');
+                  onRangeChange(idxJan2027, idxDec2027 >= 0 ? idxDec2027 : monthlySeries.length - 1);
+                }}
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border ${
+                  isYear2027
+                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
+                }`}
+              >
+                Año 2027
+              </button>
+            )}
+
             {idxOct2026 >= 0 && idxDec2026 >= 0 && (
               <button
                 type="button"
@@ -178,13 +238,13 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                   onSelectPeriod('Todos');
                   onRangeChange(idxOct2026, idxDec2026);
                 }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border ${
+                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border hidden md:inline-block ${
                   isQ4
                     ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
                 }`}
               >
-                Q4 2026
+                Q4 '26
               </button>
             )}
 
@@ -204,23 +264,6 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
               Nov 26 (Actual)
             </button>
 
-            {idxJan2027 >= 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectPeriod('Todos');
-                  onRangeChange(idxJan2027, monthlySeries.length - 1);
-                }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border hidden sm:inline-block ${
-                  isProj2027
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
-                }`}
-              >
-                Proy 2027
-              </button>
-            )}
-
             {/* Excel Download link */}
             <a
               href="./CDU%20Pipeline%20Forecast%20-%20REPARADO.xlsx"
@@ -234,7 +277,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
           </div>
         </div>
 
-        {/* Bottom Track: All Monthly Pill Buttons (Horizontal Flex / Scroll) */}
+        {/* Bottom Track: All 24 Monthly Pill Buttons (Horizontal Flex / Scroll) */}
         <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar scroll-smooth">
           {monthlySeries.map((m, idx) => {
             const isSingleSelected = selectedPeriod === m.month;
@@ -243,6 +286,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
             const isBoundary =
               selectedPeriod === 'Todos' ? idx === safeStart || idx === safeEnd : isSingleSelected;
             const isCurrentMonth = m.month === 'Noviembre 2026';
+            const hasActivity = m.closedWon > 0 || m.pipelineOpen > 0;
 
             return (
               <button
@@ -250,16 +294,14 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                 type="button"
                 onClick={() => {
                   if (selectedPeriod === m.month) {
-                    // Toggle back to full range
                     onSelectPeriod('Todos');
                     onRangeChange(0, monthlySeries.length - 1);
                   } else {
-                    // Set single month or adjust range
                     onSelectPeriod(m.month);
                     onRangeChange(idx, idx);
                   }
                 }}
-                className={`group relative shrink-0 py-1 px-2 sm:px-2.5 rounded-lg text-[11px] font-mono transition-all border text-center flex items-center gap-1.5 ${
+                className={`group relative shrink-0 py-1 px-2 sm:px-2 rounded-lg text-[10.5px] font-mono transition-all border text-center flex items-center gap-1.5 ${
                   isBoundary
                     ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] dark:border-[#00B4D8] font-bold shadow-md scale-[1.02]'
                     : inRange
@@ -272,7 +314,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
               >
                 {/* Indicator dots for won and pipeline */}
                 <div className="flex items-center gap-0.5">
-                  {m.closedWon > 0 && (
+                  {m.closedWon > 0 ? (
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         isBoundary
@@ -281,8 +323,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                       }`}
                       title={`Facturado: ${fmt(m.closedWon)}`}
                     />
-                  )}
-                  {m.pipelineOpen > 0 && (
+                  ) : m.pipelineOpen > 0 ? (
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         isBoundary
@@ -291,6 +332,8 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                       }`}
                       title={`Pipeline abierto: ${fmt(m.pipelineOpen)}`}
                     />
+                  ) : (
+                    <span className="w-1 h-1 rounded-full bg-slate-300/60 dark:bg-slate-700/60" />
                   )}
                 </div>
 
