@@ -655,26 +655,80 @@ export function App() {
             totalDeals={clientFilteredDeals.length}
           />
 
-          {/* Main Workspace Body */}
-          <main className="p-3.5 sm:p-6 space-y-5 sm:space-y-6 max-w-[1600px] w-full mx-auto">
+          {/* Main Workspace Body - Full-Width Layout Utilizing Space */}
+          <main className="p-3 sm:p-6 space-y-6 w-full">
             {activeTab === 'dashboard' && (
               <>
-                {/* Top Zone: Left Dynamic KPI Analytical Chart (2/3) + Right Quota & Balance Card (1/3) */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-                  <div className="xl:col-span-2">
-                    <ForecastChart
-                      monthlyData={monthlySeries}
+                {/* Top Zone: 2 Modern Synchronized Charts Side by Side */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                  {/* Gráfico 1: Curva Neón Difuminada */}
+                  <ForecastChart
+                    monthlyData={monthlySeries}
+                    currency={currency}
+                    exchangeRate={exchangeRate}
+                    quotaClp={quotaClp}
+                    activeKpi={activeKpi}
+                    rangeStartIdx={safeStartIdx}
+                    rangeEndIdx={safeEndIdx}
+                    defaultChartType="area"
+                    customTitle="✨ Gráfico 1: Curva Neón Difuminada (Tendencia & Ponderación)"
+                    customSubtitle="Proyección analítica continua con ambient glow y puntos de inflexión frente a la meta"
+                  />
+
+                  {/* Gráfico 2: Barras Ejecutivas de Alto Contraste */}
+                  <ForecastChart
+                    monthlyData={monthlySeries}
+                    currency={currency}
+                    exchangeRate={exchangeRate}
+                    quotaClp={quotaClp}
+                    activeKpi={activeKpi}
+                    rangeStartIdx={safeStartIdx}
+                    rangeEndIdx={safeEndIdx}
+                    defaultChartType="stacked"
+                    customTitle="📊 Gráfico 2: Barras Ejecutivas de Desglose (Won vs Commit vs Best Case)"
+                    customSubtitle="Composición mensual por nivel de certeza: Facturado (Won), Commit firme y Best Case"
+                  />
+                </div>
+
+                {/* Section 2: Matriz Interactiva de 8 KPIs Estratégicos (2/3) + Inspector Matemático (1/3) */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+                  <div className="xl:col-span-2 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
+                          Matriz Interactiva de 8 KPIs Estratégicos (Toca un KPI para actualizar los gráficos e inspector)
+                        </h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Métricas calculadas en vivo sobre la ventana activa ({activePeriodLabel})
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-1 bg-white dark:bg-[#101D38] p-1 rounded-xl border border-[#DDD4C5] dark:border-slate-800 text-xs overflow-x-auto max-w-full">
+                        {(['Todos', 'Forecast', 'Cotizaciones', 'Conversión'] as const).map(
+                          (b) => (
+                            <button
+                              key={b}
+                              onClick={() => setKpiBlockFilter(b)}
+                              className={`px-3 py-1 rounded-lg font-medium transition whitespace-nowrap ${
+                                kpiBlockFilter === b
+                                  ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
+                                  : 'text-slate-600 dark:text-slate-400'
+                              }`}
+                            >
+                              {b}
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <KpiCard
+                      kpis={kpis}
                       currency={currency}
                       exchangeRate={exchangeRate}
-                      quotaClp={quotaClp}
+                      selectedBlock={kpiBlockFilter}
                       activeKpi={activeKpi}
-                      rangeStartIdx={safeStartIdx}
-                      rangeEndIdx={safeEndIdx}
-                      onRangeChange={(s, e) => {
-                        setRangeStartIdx(s);
-                        setRangeEndIdx(e);
-                        setSelectedPeriod('Todos');
-                      }}
+                      onSelectKpi={(key) => setActiveKpi(key)}
                     />
                   </div>
 
@@ -689,47 +743,6 @@ export function App() {
                       activePeriodLabel={activePeriodLabel}
                     />
                   </div>
-                </div>
-
-                {/* Section 2: The 8 Strategic Interactive KPIs */}
-                <div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div>
-                      <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
-                        Matriz Interactiva de 8 KPIs Estratégicos (Toca un KPI para graficarlo arriba)
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        Métricas calculadas en vivo sobre la ventana activa ({activePeriodLabel})
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-white dark:bg-[#101D38] p-1 rounded-xl border border-[#DDD4C5] dark:border-slate-800 text-xs overflow-x-auto max-w-full">
-                      {(['Todos', 'Forecast', 'Cotizaciones', 'Conversión'] as const).map(
-                        (b) => (
-                          <button
-                            key={b}
-                            onClick={() => setKpiBlockFilter(b)}
-                            className={`px-3 py-1 rounded-lg font-medium transition whitespace-nowrap ${
-                              kpiBlockFilter === b
-                                ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
-                                : 'text-slate-600 dark:text-slate-400'
-                            }`}
-                          >
-                            {b}
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <KpiCard
-                    kpis={kpis}
-                    currency={currency}
-                    exchangeRate={exchangeRate}
-                    selectedBlock={kpiBlockFilter}
-                    activeKpi={activeKpi}
-                    onSelectKpi={(key) => setActiveKpi(key)}
-                  />
                 </div>
 
                 {/* Section 3: Interactive Responsive Data Table */}

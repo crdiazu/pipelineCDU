@@ -110,7 +110,7 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
 
   return (
     <div className="sticky top-[53px] sm:top-[57px] z-20 backdrop-blur-md bg-[#FFFDF8]/95 dark:bg-[#070C1C]/95 border-b border-[#DDD4C5] dark:border-slate-800/90 px-3 sm:px-6 py-2 shadow-sm transition-colors">
-      <div className="flex flex-col gap-2 max-w-[1600px] mx-auto">
+      <div className="flex flex-col gap-2 w-full">
         {/* Top Mini Navigation Bar: Client Filter, Presets & Excel Download */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
           {/* Left: Client Filter & Summary */}
