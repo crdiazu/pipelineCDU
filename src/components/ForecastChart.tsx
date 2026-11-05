@@ -300,34 +300,34 @@ export const ForecastChart: React.FC<Props> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#070C1C] p-1.5 rounded-xl border border-slate-300 dark:border-slate-800">
           <button
             onClick={() => setChartType('area')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
               chartType === 'area'
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-[#101D38] dark:text-[#00B4D8]'
-                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                ? 'bg-[#2A5FFF] text-white shadow-md dark:bg-[#00B4D8] dark:text-[#0B132B]'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
-            <TrendingUp className="w-3.5 h-3.5" />
-            Tendencia Difuminada
+            <TrendingUp className="w-4 h-4" />
+            Curva Neón Difuminada
           </button>
           <button
             onClick={() => setChartType('bars')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
               chartType === 'bars'
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-[#101D38] dark:text-[#00B4D8]'
-                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
+                ? 'bg-[#2A5FFF] text-white shadow-md dark:bg-[#00B4D8] dark:text-[#0B132B]'
+                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
             }`}
           >
-            <BarChart2 className="w-3.5 h-3.5" />
-            Columnas
+            <BarChart2 className="w-4 h-4" />
+            Barras Ejecutivas
           </button>
           <button
             onClick={() => setChartType('stacked')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition hidden sm:flex ${
               chartType === 'stacked'
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-[#101D38] dark:text-[#00B4D8]'
+                ? 'bg-[#2A5FFF] text-white shadow-md dark:bg-[#00B4D8] dark:text-[#0B132B]'
                 : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
             }`}
           >

@@ -14,6 +14,7 @@ import {
   Bot,
   Menu,
   X,
+  Award,
 } from 'lucide-react';
 import {
   loadPipeline,
@@ -32,6 +33,7 @@ import { ClientLogo, VendorBadge } from './components/ClientLogo';
 import CduAgentDrawer from './components/CduAgentDrawer';
 import PersistentTimeline from './components/PersistentTimeline';
 import ClientTimeAnalysis from './components/ClientTimeAnalysis';
+import KpiMathInspector from './components/KpiMathInspector';
 
 const initialDeals = loadPipeline();
 
@@ -150,6 +152,47 @@ export function App() {
       return true;
     });
   }, [clientFilteredDeals, selectedPeriod, rangeSortStart, rangeSortEnd]);
+
+  // Top 5 deals dynamically ranked according to the active KPI card
+  const top5Deals = useMemo(() => {
+    let list = [...periodFilteredDeals];
+    switch (activeKpi) {
+      case 'weightedPipeline':
+        list.sort((a, b) => b.weightedPipeline - a.weightedPipeline);
+        break;
+      case 'pipelineCoverage':
+      case 'activePipelineValue':
+        list = list.filter((d) => d.status === 'Abierta');
+        list.sort((a, b) => b.estimatedAmount - a.estimatedAmount);
+        break;
+      case 'forecastAccuracy':
+        list.sort(
+          (a, b) =>
+            b.probability - a.probability || b.estimatedAmount - a.estimatedAmount
+        );
+        break;
+      case 'weightedGrossMarginPct':
+        list.sort(
+          (a, b) => (b.estimatedMarginPct || 0) - (a.estimatedMarginPct || 0)
+        );
+        break;
+      case 'winRatePct':
+      case 'averageDealSizeWon':
+        list.sort((a, b) => {
+          if (a.status === 'Closed Won' && b.status !== 'Closed Won') return -1;
+          if (b.status === 'Closed Won' && a.status !== 'Closed Won') return 1;
+          return b.estimatedAmount - a.estimatedAmount;
+        });
+        break;
+      case 'averageSalesCycleDays':
+        list.sort((a, b) => b.estimatedAmount - a.estimatedAmount);
+        break;
+      default:
+        list.sort((a, b) => b.weightedPipeline - a.weightedPipeline);
+        break;
+    }
+    return list.slice(0, 5);
+  }, [periodFilteredDeals, activeKpi]);
 
   const fmt = (val: number, compact = false) =>
     formatCurrency(val, currency, exchangeRate, compact);
@@ -344,55 +387,74 @@ export function App() {
               })}
             </nav>
 
-            {/* Selected Deal Quick Inspector in Sidebar with ClientLogo */}
-            {selectedDeal && (
-              <div className="mt-6 p-3.5 rounded-xl border border-[#DDD4C5] dark:border-slate-800 bg-[#F5F1E8]/60 dark:bg-[#101D38]/70">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
-                    Ficha Activa · {selectedDeal.code}
-                  </span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-[#C6F432]">
-                    {selectedDeal.probability}%
+            {/* Top 5 Negocios según el filtro del KPI activo */}
+            <div className="mt-5 p-3 rounded-xl border border-[#DDD4C5] dark:border-slate-800 bg-[#F5F1E8]/70 dark:bg-[#101D38]/70">
+              <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-slate-300 dark:border-slate-800">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <Award className="w-4 h-4 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
+                  <span className="text-xs font-mono uppercase font-bold text-slate-800 dark:text-white truncate">
+                    Top 5 · {activeKpi}
                   </span>
                 </div>
-
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <ClientLogo client={selectedDeal.client} size="md" />
-                  <div className="min-w-0">
-                    <p className="text-xs font-serif font-bold text-slate-900 dark:text-white truncate">
-                      {selectedDeal.client}
-                    </p>
-                    <VendorBadge brand={selectedDeal.brand} />
-                  </div>
-                </div>
-
-                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 leading-snug">
-                  {selectedDeal.opportunity}
-                </p>
-                <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
-                  <span className="text-slate-500">Neto:</span>
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {fmt(selectedDeal.estimatedAmount, false)}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-xs font-mono mt-1">
-                  <span className="text-slate-500">Weighted:</span>
-                  <span className="font-bold text-emerald-700 dark:text-[#C6F432]">
-                    {fmt(selectedDeal.weightedPipeline, false)}
-                  </span>
-                </div>
-                {selectedDeal.nextAction && (
-                  <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                    <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                      Próxima Acción ({selectedDeal.nextActionDate || 'Pendiente'}):
-                    </span>
-                    <p className="text-[11px] text-slate-700 dark:text-slate-300 mt-0.5">
-                      {selectedDeal.nextAction}
-                    </p>
-                  </div>
-                )}
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-[#C6F432] font-bold shrink-0">
+                  {top5Deals.length} deals
+                </span>
               </div>
-            )}
+
+              <div className="space-y-1.5">
+                {top5Deals.map((d, idx) => {
+                  const isSelected = selectedDeal?.id === d.id;
+                  return (
+                    <div
+                      key={d.id}
+                      onClick={() => setSelectedDeal(d)}
+                      className={`p-2 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${
+                        isSelected
+                          ? 'border-[#2A5FFF] bg-[#2A5FFF]/15 dark:border-[#00B4D8] dark:bg-[#00B4D8]/20 shadow-sm'
+                          : 'border-slate-200/80 dark:border-slate-800/80 bg-white/80 dark:bg-[#070C1C]/80 hover:border-slate-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xs font-mono font-black text-slate-400 w-4">
+                          #{idx + 1}
+                        </span>
+                        <ClientLogo client={d.client} size="sm" />
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            {d.client}
+                          </p>
+                          <p className="text-[10px] text-slate-500 truncate">
+                            {d.code} · {d.brand}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-xs font-mono font-bold text-slate-900 dark:text-white block">
+                          {fmt(d.estimatedAmount, true)}
+                        </span>
+                        <span className="text-[10px] font-mono font-semibold text-emerald-600 dark:text-[#C6F432]">
+                          {d.probability}% prob
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selectedDeal && (
+                <div className="mt-2.5 pt-2 border-t border-slate-300 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-300">
+                  <span className="text-[10px] text-slate-400 uppercase block">Seleccionado:</span>
+                  <span className="font-bold text-slate-900 dark:text-white truncate block">
+                    {selectedDeal.client} · {selectedDeal.opportunity}
+                  </span>
+                  <div className="flex justify-between mt-1 text-[10px]">
+                    <span>Neto: {fmt(selectedDeal.estimatedAmount, false)}</span>
+                    <span className="text-[#00B4D8] font-bold">W: {fmt(selectedDeal.weightedPipeline, false)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer Quota Config */}
@@ -616,132 +678,16 @@ export function App() {
                     />
                   </div>
 
-                  {/* Right Quota & Quick Win Balance Module */}
-                  <div className="rounded-xl p-4 sm:p-5 border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-[#C6F432] font-semibold truncate">
-                          Salud de Cuota · {activePeriodLabel}
-                        </span>
-                        <span className="text-xs font-mono text-slate-400 shrink-0">
-                          Meta: {fmt(quotaClp, true)}
-                        </span>
-                      </div>
-
-                      <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white mt-2">
-                        Proyección Comercial (Facturado + Weighted)
-                      </h3>
-
-                      <div className="mt-2 flex flex-wrap items-baseline gap-2.5">
-                        <span className="text-2xl sm:text-3xl font-serif font-bold text-slate-900 dark:text-white">
-                          {fmt(kpis.projectedTotalAmount, false)}
-                        </span>
-                        <span className="text-xs font-mono font-semibold text-emerald-600 dark:text-[#C6F432]">
-                          {kpis.projectedAttainmentPct.toFixed(1)}% de la meta
-                        </span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mt-3">
-                        <div className="w-full h-2.5 rounded-full bg-slate-200 dark:bg-[#0B132B] overflow-hidden flex">
-                          <div
-                            style={{
-                              width: `${Math.min(100, kpis.quotaAttainmentPct)}%`,
-                            }}
-                            className="bg-emerald-500 h-full"
-                            title="Facturado (Closed Won)"
-                          />
-                          <div
-                            style={{
-                              width: `${Math.min(
-                                100 - Math.min(100, kpis.quotaAttainmentPct),
-                                (kpis.commitAmount / quotaClp) * 100
-                              )}%`,
-                            }}
-                            className="bg-[#00B4D8] h-full"
-                            title="Commit Abierto"
-                          />
-                          <div
-                            style={{
-                              width: `${Math.min(
-                                100,
-                                (kpis.weightedPipeline / quotaClp) * 100
-                              )}%`,
-                            }}
-                            className="bg-[#C6F432]/80 h-full"
-                            title="Weighted Pipeline"
-                          />
-                        </div>
-                        <div className="flex justify-between text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1.5">
-                          <span>Facturado: {fmt(kpis.closedWonAmount, true)}</span>
-                          <span>Commit: {fmt(kpis.commitAmount, true)}</span>
-                          <span>Best Case: {fmt(kpis.bestCaseAmount, true)}</span>
-                        </div>
-                      </div>
-
-                      {/* Breakdown Grid */}
-                      <div className="mt-4 grid grid-cols-2 gap-2.5 pt-3 border-t border-slate-200/80 dark:border-slate-800">
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B132B]">
-                          <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                            Facturado (Closed Won)
-                          </span>
-                          <span className="text-xs sm:text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                            {fmt(kpis.closedWonAmount, false)}
-                          </span>
-                          <span className="text-[10px] text-slate-400 block">
-                            {kpis.wonDealsCount} facturas emitidas
-                          </span>
-                        </div>
-
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B132B]">
-                          <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                            Faltante Meta (Gap)
-                          </span>
-                          <span className="text-xs sm:text-sm font-mono font-bold text-slate-900 dark:text-white">
-                            {fmt(kpis.remainingQuota, false)}
-                          </span>
-                          <span className="text-[10px] text-slate-400 block">
-                            Cubierto {kpis.pipelineCoverage.toFixed(1)}× por pipeline
-                          </span>
-                        </div>
-
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B132B]">
-                          <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                            Forecast (Commit+Best)
-                          </span>
-                          <span className="text-xs sm:text-sm font-mono font-bold text-[#2A5FFF] dark:text-[#00B4D8]">
-                            {fmt(kpis.forecastTotal, false)}
-                          </span>
-                          <span className="text-[10px] text-slate-400 block">
-                            {((kpis.forecastTotal / quotaClp) * 100).toFixed(0)}% sobre meta
-                          </span>
-                        </div>
-
-                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#0B132B]">
-                          <span className="text-[10px] font-mono uppercase text-slate-400 block">
-                            Leads / Ops en Rango
-                          </span>
-                          <span className="text-xs sm:text-sm font-mono font-bold text-slate-900 dark:text-white">
-                            {kpis.totalDealsCount} Deals
-                          </span>
-                          <span className="text-[10px] text-emerald-600 dark:text-[#C6F432] block">
-                            {kpis.qualifiedRatioPct.toFixed(0)}% Calificados (≥40%)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        Prioridad: cerrar Commit + Best Case vigentes
-                      </span>
-                      <button
-                        onClick={() => setActiveTab('kanban')}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#2A5FFF] dark:text-[#00B4D8] hover:underline"
-                      >
-                        Ir al Tablero <ArrowUpRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                  {/* Right Dynamic KPI Math Inspector Card (Cambia al hacer clic en cualquier KPI) */}
+                  <div className="xl:col-span-1">
+                    <KpiMathInspector
+                      activeKpi={activeKpi}
+                      kpis={kpis}
+                      quotaClp={quotaClp}
+                      currency={currency}
+                      exchangeRate={exchangeRate}
+                      activePeriodLabel={activePeriodLabel}
+                    />
                   </div>
                 </div>
 
