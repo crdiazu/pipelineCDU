@@ -5,10 +5,9 @@ import {
   Calendar,
   Sparkles,
   Download,
-  CheckCircle2,
-  TrendingUp,
   Users,
   X,
+  ChevronDown,
 } from 'lucide-react';
 import { MonthlySummary } from '../utils/kpi';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
@@ -58,19 +57,19 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
   exchangeRate,
   totalDeals,
 }) => {
-  const safeStart = Math.max(0, Math.min(rangeStartIdx, monthlySeries.length - 1));
-  const safeEnd = Math.max(safeStart, Math.min(rangeEndIdx, monthlySeries.length - 1));
+  const maxIdx = Math.max(1, monthlySeries.length - 1);
+  const safeStart = Math.max(0, Math.min(rangeStartIdx, maxIdx));
+  const safeEnd = Math.max(safeStart, Math.min(rangeEndIdx, maxIdx));
 
   // Determine indices for quick presets
   const idxJan2026 = monthlySeries.findIndex((m) => m.month === 'Enero 2026');
   const idxDec2026 = monthlySeries.findIndex((m) => m.month === 'Diciembre 2026');
-  const idxOct2026 = monthlySeries.findIndex((m) => m.month === 'Octubre 2026');
-  const idxNov2026 = monthlySeries.findIndex((m) => m.month === 'Noviembre 2026');
   const idxJan2027 = monthlySeries.findIndex((m) => m.month === 'Enero 2027');
   const idxDec2027 = monthlySeries.findIndex((m) => m.month === 'Diciembre 2027');
+  const idxNov2026 = monthlySeries.findIndex((m) => m.month === 'Noviembre 2026');
 
   const isFullRange =
-    selectedPeriod === 'Todos' && safeStart === 0 && safeEnd === monthlySeries.length - 1;
+    selectedPeriod === 'Todos' && safeStart === 0 && safeEnd === maxIdx;
   const isYear2026 =
     selectedPeriod === 'Todos' &&
     safeStart === (idxJan2026 >= 0 ? idxJan2026 : 0) &&
@@ -78,19 +77,8 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
   const isYear2027 =
     selectedPeriod === 'Todos' &&
     safeStart === (idxJan2027 >= 0 ? idxJan2027 : safeStart) &&
-    safeEnd === (idxDec2027 >= 0 ? idxDec2027 : monthlySeries.length - 1);
-  const isQ4 =
-    selectedPeriod === 'Todos' &&
-    safeStart === (idxOct2026 >= 0 ? idxOct2026 : safeStart) &&
-    safeEnd === (idxDec2026 >= 0 ? idxDec2026 : safeEnd);
+    safeEnd === (idxDec2027 >= 0 ? idxDec2027 : maxIdx);
   const isNovCurrent = selectedPeriod === 'Noviembre 2026';
-
-  const currentWindowLabel =
-    selectedPeriod !== 'Todos'
-      ? selectedPeriod
-      : `${formatShortMonth(monthlySeries[safeStart]?.month || '')} → ${formatShortMonth(
-          monthlySeries[safeEnd]?.month || ''
-        )}`;
 
   // Calculate sum of closedWon and pipeline in the active window
   const activeWindowMetrics = React.useMemo(() => {
@@ -115,27 +103,25 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
 
   const fmt = (v: number) => formatCurrency(v, currency, exchangeRate, true);
 
+  // Percentages for the dual slider track
+  const leftPct = (safeStart / maxIdx) * 100;
+  const rightPct = (safeEnd / maxIdx) * 100;
+  const widthPct = Math.max(1, rightPct - leftPct);
+
   return (
     <div className="sticky top-[53px] sm:top-[57px] z-20 backdrop-blur-md bg-[#FFFDF8]/95 dark:bg-[#070C1C]/95 border-b border-[#DDD4C5] dark:border-slate-800/90 px-3 sm:px-6 py-2 shadow-sm transition-colors">
-      <div className="flex flex-col gap-2">
-        {/* Top Control Bar: Title, Client Filter, Window Indicator & Quick Presets */}
+      <div className="flex flex-col gap-2 max-w-[1600px] mx-auto">
+        {/* Top Mini Navigation Bar: Client Filter, Presets & Excel Download */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          {/* Left: Indicator, Window & Global Client Filter */}
+          {/* Left: Client Filter & Summary */}
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#2A5FFF]/10 text-[#2A5FFF] dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] font-semibold">
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-mono uppercase tracking-wider hidden sm:inline">
-                Línea de Tiempo
-              </span>
-            </div>
-
             {/* Client Filter Dropdown */}
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#101D38] px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-700">
-              <Users className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
+            <div className="flex items-center gap-2 bg-white dark:bg-[#101D38] px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 shadow-sm">
+              <Users className="w-4 h-4 text-[#2A5FFF] dark:text-[#00B4D8] shrink-0" />
               <select
                 value={selectedClient}
                 onChange={(e) => onSelectClient(e.target.value)}
-                className="bg-transparent font-sans font-semibold text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer max-w-[130px] sm:max-w-[180px] truncate"
+                className="bg-transparent font-sans font-bold text-xs sm:text-sm text-slate-900 dark:text-white focus:outline-none cursor-pointer max-w-[160px] sm:max-w-[220px] truncate"
               >
                 <option value="Todos" className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white">
                   Todos los Clientes ({clientList.length})
@@ -157,44 +143,39 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                   title="Limpiar filtro de cliente"
                   className="p-0.5 rounded text-slate-400 hover:text-rose-500"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
-            {/* Window Indicator */}
-            <div className="flex items-center gap-1.5 font-mono text-[11px]">
-              <span className="text-slate-400 hidden md:inline">Ventana:</span>
-              <span className="font-bold text-slate-900 dark:text-white px-2 py-0.5 rounded bg-slate-200/70 dark:bg-[#101D38] border border-slate-300/60 dark:border-slate-700">
-                {currentWindowLabel}
-              </span>
-              <span className="text-emerald-700 dark:text-[#C6F432] font-semibold hidden lg:inline ml-1">
+            {/* Metrics in Active Range */}
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <span className="text-emerald-700 dark:text-[#C6F432] font-bold px-2 py-0.5 rounded bg-emerald-500/10 dark:bg-emerald-500/20">
                 Won: {fmt(activeWindowMetrics.won)}
               </span>
               {activeWindowMetrics.pipe > 0 && (
-                <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-semibold hidden lg:inline">
-                  · Pipe: {fmt(activeWindowMetrics.pipe)}
+                <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-bold px-2 py-0.5 rounded bg-[#2A5FFF]/10 dark:bg-[#00B4D8]/20 hidden sm:inline">
+                  Pipe: {fmt(activeWindowMetrics.pipe)}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Right: Presets & Excel Download */}
+          {/* Right: Quick Range Presets & Excel Download */}
           <div className="flex flex-wrap items-center gap-1.5">
-            {/* Presets */}
             <button
               type="button"
               onClick={() => {
                 onSelectPeriod('Todos');
-                onRangeChange(0, monthlySeries.length - 1);
+                onRangeChange(0, maxIdx);
               }}
-              className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition border ${
                 isFullRange
-                  ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white font-bold'
+                  ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white font-bold shadow-sm'
                   : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
               }`}
             >
-              Todo ({monthlySeries.length}M)
+              Todo (24M)
             </button>
 
             {idxJan2026 >= 0 && idxDec2026 >= 0 && (
@@ -204,9 +185,9 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                   onSelectPeriod('Todos');
                   onRangeChange(idxJan2026, idxDec2026);
                 }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono transition border ${
                   isYear2026
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
+                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold shadow-sm'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
                 }`}
               >
@@ -219,32 +200,15 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                 type="button"
                 onClick={() => {
                   onSelectPeriod('Todos');
-                  onRangeChange(idxJan2027, idxDec2027 >= 0 ? idxDec2027 : monthlySeries.length - 1);
+                  onRangeChange(idxJan2027, idxDec2027 >= 0 ? idxDec2027 : maxIdx);
                 }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-mono transition border ${
                   isYear2027
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
+                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold shadow-sm'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
                 }`}
               >
                 Año 2027
-              </button>
-            )}
-
-            {idxOct2026 >= 0 && idxDec2026 >= 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectPeriod('Todos');
-                  onRangeChange(idxOct2026, idxDec2026);
-                }}
-                className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border hidden md:inline-block ${
-                  isQ4
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold'
-                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400 dark:bg-[#101D38] dark:text-slate-300 dark:border-slate-700'
-                }`}
-              >
-                Q4 '26
               </button>
             )}
 
@@ -254,13 +218,13 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
                 onSelectPeriod('Noviembre 2026');
                 if (idxNov2026 >= 0) onRangeChange(idxNov2026, idxNov2026);
               }}
-              className={`px-2 py-1 rounded-lg text-[10px] font-mono transition border flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition border flex items-center gap-1.5 ${
                 isNovCurrent
                   ? 'bg-emerald-600 text-white border-emerald-600 dark:bg-[#C6F432] dark:text-[#0B132B] dark:border-[#C6F432] font-bold shadow-sm'
                   : 'bg-white text-slate-700 border-emerald-500/40 hover:border-emerald-500 dark:bg-[#101D38] dark:text-slate-200 dark:border-emerald-500/40'
               }`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-[#C6F432] animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-[#C6F432] animate-pulse" />
               Nov 26 (Actual)
             </button>
 
@@ -269,90 +233,145 @@ export const PersistentTimeline: React.FC<PersistentTimelineProps> = ({
               href="./CDU%20Pipeline%20Forecast%20-%20REPARADO.xlsx"
               download="CDU Pipeline Forecast - REPARADO.xlsx"
               title="Descargar libro maestro Excel (.xlsx) con 112 negocios y fórmulas nativas"
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-mono font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm ml-1"
             >
-              <Download className="w-3 h-3" />
+              <Download className="w-3.5 h-3.5" />
               <span>Excel ({totalDeals})</span>
             </a>
           </div>
         </div>
 
-        {/* Bottom Track: All 24 Monthly Pill Buttons (Horizontal Flex / Scroll) */}
-        <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar scroll-smooth">
-          {monthlySeries.map((m, idx) => {
-            const isSingleSelected = selectedPeriod === m.month;
-            const inRange =
-              selectedPeriod === 'Todos' ? idx >= safeStart && idx <= safeEnd : isSingleSelected;
-            const isBoundary =
-              selectedPeriod === 'Todos' ? idx === safeStart || idx === safeEnd : isSingleSelected;
-            const isCurrentMonth = m.month === 'Noviembre 2026';
-            const hasActivity = m.closedWon > 0 || m.pipelineOpen > 0;
+        {/* POWER BI SLICER CARD (Réplica exacta visual de Slicer Power BI con Cajas Desde/Hasta + Deslizador Dual) */}
+        <div className="p-3 sm:p-4 rounded-2xl bg-white/95 dark:bg-[#0A1226] border-2 border-slate-200 dark:border-slate-800 shadow-md">
+          {/* Slicer Header & Range Display Boxes (Exact Power BI Style) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-[#2A5FFF] dark:text-[#00B4D8]" />
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Slicer de Rango Temporal
+              </span>
+              <span className="text-xs font-mono text-slate-400">
+                ({safeEnd - safeStart + 1} de {monthlySeries.length} meses)
+              </span>
+            </div>
 
-            return (
-              <button
-                key={m.month}
-                type="button"
-                onClick={() => {
-                  if (selectedPeriod === m.month) {
+            {/* Power BI Dual Date Boxes */}
+            <div className="flex items-center gap-3">
+              {/* Box 1: DESDE */}
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#111C38] border-2 border-[#2A5FFF]/50 dark:border-[#00B4D8]/60 px-3.5 py-1.5 rounded-xl shadow-inner">
+                <span className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 font-bold">
+                  Desde:
+                </span>
+                <select
+                  value={safeStart}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
                     onSelectPeriod('Todos');
-                    onRangeChange(0, monthlySeries.length - 1);
-                  } else {
-                    onSelectPeriod(m.month);
-                    onRangeChange(idx, idx);
-                  }
+                    onRangeChange(val, Math.max(val, safeEnd));
+                  }}
+                  className="bg-transparent font-serif font-black text-sm sm:text-base text-slate-900 dark:text-[#00B4D8] focus:outline-none cursor-pointer"
+                >
+                  {monthlySeries.map((m, idx) => (
+                    <option
+                      key={m.month}
+                      value={idx}
+                      disabled={idx > safeEnd}
+                      className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white font-sans"
+                    >
+                      {m.month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <span className="text-slate-400 font-mono font-bold text-sm">→</span>
+
+              {/* Box 2: HASTA */}
+              <div className="flex items-center gap-2 bg-slate-50 dark:bg-[#111C38] border-2 border-emerald-500/50 dark:border-[#C6F432]/60 px-3.5 py-1.5 rounded-xl shadow-inner">
+                <span className="text-[11px] font-mono uppercase text-slate-500 dark:text-slate-400 font-bold">
+                  Hasta:
+                </span>
+                <select
+                  value={safeEnd}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    onSelectPeriod('Todos');
+                    onRangeChange(Math.min(safeStart, val), val);
+                  }}
+                  className="bg-transparent font-serif font-black text-sm sm:text-base text-slate-900 dark:text-[#C6F432] focus:outline-none cursor-pointer"
+                >
+                  {monthlySeries.map((m, idx) => (
+                    <option
+                      key={m.month}
+                      value={idx}
+                      disabled={idx < safeStart}
+                      className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white font-sans"
+                    >
+                      {m.month}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* DUAL-THUMB RANGE SLIDER TRACK (Power BI Slider Line with 2 Circular Knobs) */}
+          <div className="relative w-full py-3 px-2">
+            {/* Background Base Bar */}
+            <div className="relative w-full h-3 rounded-full bg-slate-200 dark:bg-slate-800">
+              {/* Highlighted Active Range Segment */}
+              <div
+                style={{
+                  left: `${leftPct}%`,
+                  width: `${widthPct}%`,
                 }}
-                className={`group relative shrink-0 py-1 px-2 sm:px-2 rounded-lg text-[10.5px] font-mono transition-all border text-center flex items-center gap-1.5 ${
-                  isBoundary
-                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] dark:border-[#00B4D8] font-bold shadow-md scale-[1.02]'
-                    : inRange
-                    ? 'bg-[#2A5FFF]/15 text-[#2A5FFF] border-[#2A5FFF]/40 dark:bg-[#00B4D8]/20 dark:text-[#00B4D8] dark:border-[#00B4D8]/40 font-medium'
-                    : 'bg-white/70 text-slate-500 hover:text-slate-900 border-slate-200 hover:border-slate-300 dark:bg-[#0B132B]/60 dark:text-slate-400 dark:hover:text-white dark:border-slate-800'
-                } ${isCurrentMonth && !inRange ? 'ring-1 ring-emerald-500/50' : ''}`}
-                title={`${m.month} · Won: ${fmt(m.closedWon)} · Pipe: ${fmt(
-                  m.pipelineOpen
-                )} · Clic para filtrar`}
-              >
-                {/* Indicator dots for won and pipeline */}
-                <div className="flex items-center gap-0.5">
-                  {m.closedWon > 0 ? (
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isBoundary
-                          ? 'bg-white dark:bg-[#0B132B]'
-                          : 'bg-emerald-500 dark:bg-[#C6F432]'
-                      }`}
-                      title={`Facturado: ${fmt(m.closedWon)}`}
-                    />
-                  ) : m.pipelineOpen > 0 ? (
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isBoundary
-                          ? 'bg-white/80 dark:bg-[#0B132B]/80'
-                          : 'bg-[#2A5FFF] dark:text-[#00B4D8] bg-[#00B4D8]'
-                      }`}
-                      title={`Pipeline abierto: ${fmt(m.pipelineOpen)}`}
-                    />
-                  ) : (
-                    <span className="w-1 h-1 rounded-full bg-slate-300/60 dark:bg-slate-700/60" />
-                  )}
-                </div>
+                className="absolute h-full rounded-full bg-gradient-to-r from-[#2A5FFF] to-[#00B4D8] dark:from-[#00B4D8] dark:to-[#C6F432] shadow-md transition-all"
+              />
+            </div>
 
-                <span>{formatShortMonth(m.month)}</span>
+            {/* Left Thumb Input */}
+            <input
+              type="range"
+              min={0}
+              max={maxIdx}
+              value={safeStart}
+              onChange={(e) => {
+                const val = Math.min(Number(e.target.value), safeEnd);
+                onSelectPeriod('Todos');
+                onRangeChange(val, safeEnd);
+              }}
+              className="absolute left-0 top-3 w-full h-3 appearance-none bg-transparent pointer-events-none cursor-grab active:cursor-grabbing z-20 
+              [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-[#2A5FFF] dark:[&::-webkit-slider-thumb]:border-[#00B4D8] [&::-webkit-slider-thumb]:shadow-xl hover:[&::-webkit-slider-thumb]:scale-125 transition-transform
+              [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:h-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-[#2A5FFF] dark:[&::-moz-range-thumb]:border-[#00B4D8] [&::-moz-range-thumb]:shadow-xl hover:[&::-moz-range-thumb]:scale-125 transition-transform"
+              title={`Desde: ${monthlySeries[safeStart]?.month}`}
+            />
 
-                {isCurrentMonth && (
-                  <span
-                    className={`text-[8px] uppercase tracking-wider px-1 py-0.2 rounded font-bold ${
-                      isBoundary
-                        ? 'bg-white/30 text-white dark:bg-[#0B132B]/30 dark:text-[#0B132B]'
-                        : 'bg-emerald-500/20 text-emerald-700 dark:bg-[#C6F432]/25 dark:text-[#C6F432]'
-                    }`}
-                  >
-                    Hoy
-                  </span>
-                )}
-              </button>
-            );
-          })}
+            {/* Right Thumb Input */}
+            <input
+              type="range"
+              min={0}
+              max={maxIdx}
+              value={safeEnd}
+              onChange={(e) => {
+                const val = Math.max(Number(e.target.value), safeStart);
+                onSelectPeriod('Todos');
+                onRangeChange(safeStart, val);
+              }}
+              className="absolute left-0 top-3 w-full h-3 appearance-none bg-transparent pointer-events-none cursor-grab active:cursor-grabbing z-30 
+              [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-emerald-600 dark:[&::-webkit-slider-thumb]:border-[#C6F432] [&::-webkit-slider-thumb]:shadow-xl hover:[&::-webkit-slider-thumb]:scale-125 transition-transform
+              [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-7 [&::-moz-range-thumb]:h-7 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-emerald-600 dark:[&::-moz-range-thumb]:border-[#C6F432] [&::-moz-range-thumb]:shadow-xl hover:[&::-moz-range-thumb]:scale-125 transition-transform"
+              title={`Hasta: ${monthlySeries[safeEnd]?.month}`}
+            />
+
+            {/* Reference Tick Labels Below the Bar */}
+            <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono text-slate-400 mt-4 px-1 select-none">
+              <span className="font-bold text-slate-700 dark:text-slate-200">Ene 2026</span>
+              <span className="hidden sm:inline">Jul 2026</span>
+              <span className="font-bold text-[#2A5FFF] dark:text-[#00B4D8]">Dic 2026 (Cierre Anual)</span>
+              <span className="hidden sm:inline">Jun 2027</span>
+              <span className="font-bold text-emerald-600 dark:text-[#C6F432]">Dic 2027</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

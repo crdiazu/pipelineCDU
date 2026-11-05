@@ -364,3 +364,4 @@ export const KpiMathInspector: React.FC<KpiMathInspectorProps> = ({
 };
 
 export default KpiMathInspector;
+
