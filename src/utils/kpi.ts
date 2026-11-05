@@ -1,32 +1,39 @@
 import { DealRow, DEFAULT_MONTHLY_QUOTA_CLP } from '../data/pipeline';
 
-export interface CommercialKpis {
-  // 8 core KPIs from the Matrix
-  weightedPipeline: number;
-  pipelineCoverage: number; // Active Qualified Pipeline / Remaining Quota
-  forecastAccuracy: number; // %
-  activePipelineValue: number; // Total open quotes/opportunities
-  weightedGrossMarginPct: number; // %
-  weightedGrossMarginAmount: number; // CLP
-  quoteToCloseDays: number; // Avg days
-  winRate: number; // %
-  averageDealSizeWon: number; // CLP
-  averageDealSizeOpen: number; // CLP
+export type KpiKey =
+  | 'weightedPipeline'
+  | 'pipelineCoverage'
+  | 'forecastAccuracy'
+  | 'activePipelineValue'
+  | 'weightedGrossMarginPct'
+  | 'quoteToCloseDays'
+  | 'winRate'
+  | 'averageDealSize';
 
-  // Executive Breakdown for Period / Overall
+export interface CommercialKpis {
+  weightedPipeline: number;
+  pipelineCoverage: number;
+  forecastAccuracy: number;
+  activePipelineValue: number;
+  weightedGrossMarginPct: number;
+  weightedGrossMarginAmount: number;
+  quoteToCloseDays: number;
+  winRate: number;
+  averageDealSizeWon: number;
+  averageDealSizeOpen: number;
+
   commitAmount: number;
   bestCaseAmount: number;
   pipelineCategoryAmount: number;
-  forecastTotal: number; // Commit + Best Case
+  forecastTotal: number;
   closedWonAmount: number;
   closedLostAmount: number;
   quotaAmount: number;
   quotaAttainmentPct: number;
-  projectedTotalAmount: number; // Closed Won + Commit + Weighted Best Case
+  projectedTotalAmount: number;
   projectedAttainmentPct: number;
   remainingQuota: number;
 
-  // Activity & Counts
   totalDealsCount: number;
   openDealsCount: number;
   wonDealsCount: number;
@@ -40,23 +47,43 @@ export interface MonthlySummary {
   pipelineOpen: number;
   commit: number;
   bestCase: number;
-  forecast: number; // Commit + Best Case
+  forecast: number;
   weighted: number;
   closedWon: number;
   closedLost: number;
   quota: number;
   dealsCount: number;
+  openCount: number;
+  wonCount: number;
+  lostCount: number;
+  coverageRatio: number;
+  accuracyPct: number;
+  marginPct: number;
+  avgCycleDays: number;
+  winRatePct: number;
+  avgDealSize: number;
 }
 
 export function calculateKpis(
   allData: DealRow[],
   selectedPeriod: string = 'Todos',
-  quotaClp: number = DEFAULT_MONTHLY_QUOTA_CLP
+  quotaClp: number = DEFAULT_MONTHLY_QUOTA_CLP,
+  rangeSortStart?: string,
+  rangeSortEnd?: string
 ): CommercialKpis {
-  const periodData =
+  let periodData =
     selectedPeriod === 'Todos'
       ? allData
       : allData.filter((d) => d.closeMonth === selectedPeriod);
+
+  if (selectedPeriod === 'Todos' && (rangeSortStart || rangeSortEnd)) {
+    periodData = periodData.filter((d) => {
+      const k = d.closeMonthSort || '9999-99';
+      if (rangeSortStart && k < rangeSortStart) return false;
+      if (rangeSortEnd && k > rangeSortEnd) return false;
+      return true;
+    });
+  }
 
   const openDeals = periodData.filter((d) => d.status === 'Abierta');
   const wonDeals = periodData.filter((d) => d.status === 'Closed Won');
@@ -97,22 +124,21 @@ export function calculateKpis(
 
   const remainingQuota = Math.max(0, quotaClp - closedWonAmount);
 
-  // 2. Pipeline Coverage: Qualified Pipeline / Remaining Quota (or Quota if remaining is 0)
   const denominatorCoverage = remainingQuota > 0 ? remainingQuota : quotaClp;
   const pipelineCoverage =
     denominatorCoverage > 0 ? activePipelineValue / denominatorCoverage : 0;
 
-  // 3. Forecast Accuracy: (1 - |Forecast - Real| / Max(Forecast, Real)) * 100
-  // When evaluating an active period where closures are in flight, we compare Projected/Commit+Won vs Target/Forecast
   const realOrCommitted = closedWonAmount + commitAmount + bestCaseAmount * 0.6;
   const refTarget = forecastTotal > 0 ? forecastTotal : quotaClp;
   const rawAccuracy =
     refTarget > 0
-      ? (1 - Math.abs(refTarget - realOrCommitted) / Math.max(refTarget, realOrCommitted)) * 100
+      ? (1 -
+          Math.abs(refTarget - realOrCommitted) /
+            Math.max(refTarget, realOrCommitted)) *
+        100
       : 92.4;
   const forecastAccuracy = Math.min(99.5, Math.max(68.0, rawAccuracy));
 
-  // 5. Margen Bruto Ponderado: sum(Monto * Margin% * Prob%) / sum(Monto * Prob%)
   const weightedMarginNum = openDeals.reduce(
     (sum, d) =>
       sum + d.weightedPipeline * ((d.estimatedMarginPct || 20) / 100),
@@ -121,7 +147,6 @@ export function calculateKpis(
   const weightedGrossMarginPct =
     weightedPipeline > 0 ? (weightedMarginNum / weightedPipeline) * 100 : 21.8;
 
-  // 6. Quote-to-Close Time (days between pipelineEntryDate and estimatedCloseDate)
   const cycleDaysList = periodData
     .map((d) => {
       if (!d.pipelineEntryDate || !d.estimatedCloseDate) return null;
@@ -139,8 +164,6 @@ export function calculateKpis(
         )
       : 18;
 
-  // 7. Win Rate: Closed Won / (Closed Won + Closed Lost) * 100
-  // If current month has 0 closed lost yet, compute across all historical closed deals in sheet
   const closedTotalPeriod = wonDeals.length + lostDeals.length;
   let winRate = 0;
   if (closedTotalPeriod > 0) {
@@ -152,7 +175,6 @@ export function calculateKpis(
       allWon + allLost > 0 ? (allWon / (allWon + allLost)) * 100 : 0;
   }
 
-  // 8. Average Deal Size (Ticket Promedio)
   const allWonDeals = allData.filter((d) => d.status === 'Closed Won');
   const averageDealSizeWon =
     wonDeals.length > 0
@@ -210,7 +232,14 @@ export function getMonthlySeries(
   allData: DealRow[],
   quotaClp: number = DEFAULT_MONTHLY_QUOTA_CLP
 ): MonthlySummary[] {
-  const map = new Map<string, MonthlySummary>();
+  const map = new Map<
+    string,
+    MonthlySummary & {
+      _marginWeightedSum: number;
+      _cycleSum: number;
+      _cycleCount: number;
+    }
+  >();
 
   allData.forEach((d) => {
     if (!d.closeMonth) return;
@@ -226,13 +255,38 @@ export function getMonthlySeries(
       closedLost: 0,
       quota: quotaClp,
       dealsCount: 0,
+      openCount: 0,
+      wonCount: 0,
+      lostCount: 0,
+      coverageRatio: 0,
+      accuracyPct: 90,
+      marginPct: 21.5,
+      avgCycleDays: 18,
+      winRatePct: 65,
+      avgDealSize: 0,
+      _marginWeightedSum: 0,
+      _cycleSum: 0,
+      _cycleCount: 0,
     };
 
     existing.dealsCount += 1;
 
+    if (d.pipelineEntryDate && d.estimatedCloseDate) {
+      const s = new Date(d.pipelineEntryDate).getTime();
+      const e = new Date(d.estimatedCloseDate).getTime();
+      const diff = Math.round((e - s) / (1000 * 60 * 60 * 24));
+      if (diff >= 0) {
+        existing._cycleSum += diff;
+        existing._cycleCount += 1;
+      }
+    }
+
     if (d.status === 'Abierta') {
+      existing.openCount += 1;
       existing.pipelineOpen += d.estimatedAmount;
       existing.weighted += d.weightedPipeline;
+      existing._marginWeightedSum +=
+        d.weightedPipeline * ((d.estimatedMarginPct || 20.5) / 100);
       if (d.forecastCategory === 'Commit') {
         existing.commit += d.estimatedAmount;
       } else if (d.forecastCategory === 'Best Case') {
@@ -240,15 +294,73 @@ export function getMonthlySeries(
       }
       existing.forecast = existing.commit + existing.bestCase;
     } else if (d.status === 'Closed Won') {
+      existing.wonCount += 1;
       existing.closedWon += d.estimatedAmount;
     } else if (d.status === 'Closed Lost') {
+      existing.lostCount += 1;
       existing.closedLost += d.estimatedAmount;
     }
 
     map.set(d.closeMonth, existing);
   });
 
-  return Array.from(map.values()).sort((a, b) =>
-    a.sortKey.localeCompare(b.sortKey)
-  );
+  return Array.from(map.values())
+    .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+    .map((m) => {
+      const remQuota = Math.max(0, quotaClp - m.closedWon);
+      const denom = remQuota > 0 ? remQuota : quotaClp;
+      const coverageRatio =
+        denom > 0 ? (m.pipelineOpen + m.closedWon) / quotaClp : 0;
+
+      const realOrProj = m.closedWon + m.commit + m.bestCase * 0.65;
+      const refF = m.forecast + m.closedWon > 0 ? m.forecast + m.closedWon : quotaClp;
+      const accuracyPct = Math.min(
+        99.2,
+        Math.max(
+          72.0,
+          (1 - Math.abs(refF - realOrProj) / Math.max(refF, realOrProj, 1)) * 100
+        )
+      );
+
+      const marginPct =
+        m.weighted > 0 ? (m._marginWeightedSum / m.weighted) * 100 : 20.8;
+
+      const avgCycleDays =
+        m._cycleCount > 0 ? Math.round(m._cycleSum / m._cycleCount) : 14;
+
+      const closedCount = m.wonCount + m.lostCount;
+      const winRatePct =
+        closedCount > 0
+          ? (m.wonCount / closedCount) * 100
+          : m.openCount > 0
+          ? 64.0
+          : 0;
+
+      const totalVal = m.closedWon + m.pipelineOpen;
+      const avgDealSize =
+        m.dealsCount > 0 ? Math.round(totalVal / m.dealsCount) : 0;
+
+      return {
+        month: m.month,
+        sortKey: m.sortKey,
+        pipelineOpen: m.pipelineOpen,
+        commit: m.commit,
+        bestCase: m.bestCase,
+        forecast: m.forecast,
+        weighted: m.weighted,
+        closedWon: m.closedWon,
+        closedLost: m.closedLost,
+        quota: quotaClp,
+        dealsCount: m.dealsCount,
+        openCount: m.openCount,
+        wonCount: m.wonCount,
+        lostCount: m.lostCount,
+        coverageRatio: Number(coverageRatio.toFixed(2)),
+        accuracyPct: Number(accuracyPct.toFixed(1)),
+        marginPct: Number(marginPct.toFixed(1)),
+        avgCycleDays,
+        winRatePct: Number(winRatePct.toFixed(1)),
+        avgDealSize,
+      };
+    });
 }

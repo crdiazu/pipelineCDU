@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
-import { MonthlySummary } from '../utils/kpi';
+import React, { useState, useMemo } from 'react';
+import { MonthlySummary, KpiKey } from '../utils/kpi';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
-import { BarChart2, TrendingUp, Layers } from 'lucide-react';
+import {
+  BarChart2,
+  TrendingUp,
+  Layers,
+  SlidersHorizontal,
+  RotateCcw,
+} from 'lucide-react';
 
 interface Props {
   monthlyData: MonthlySummary[];
   currency: CurrencyCode;
   exchangeRate: number;
   quotaClp: number;
+  activeKpi: KpiKey;
+  rangeStartIdx: number;
+  rangeEndIdx: number;
+  onRangeChange: (startIdx: number, endIdx: number) => void;
+}
+
+interface KpiChartMeta {
+  title: string;
+  subtitle: string;
+  primaryLabel: string;
+  secondaryLabel: string;
+  targetLabel: string;
+  primaryColor: string;
+  secondaryColor: string;
+  unitType: 'currency' | 'ratio' | 'percent' | 'days';
+  getPrimary: (m: MonthlySummary) => number;
+  getSecondary: (m: MonthlySummary) => number;
+  getTarget: (quotaClp: number) => number;
 }
 
 export const ForecastChart: React.FC<Props> = ({
@@ -15,32 +39,183 @@ export const ForecastChart: React.FC<Props> = ({
   currency,
   exchangeRate,
   quotaClp,
+  activeKpi,
+  rangeStartIdx,
+  rangeEndIdx,
+  onRangeChange,
 }) => {
   const [chartType, setChartType] = useState<'area' | 'bars' | 'stacked'>('area');
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  const fmt = (val: number, compact = true) =>
+  const fmtCurrency = (val: number, compact = true) =>
     formatCurrency(val, currency, exchangeRate, compact);
 
-  const maxVal = Math.max(
-    quotaClp * 1.25,
-    ...monthlyData.map((m) =>
-      Math.max(m.forecast + m.closedWon, m.weighted + m.closedWon, m.pipelineOpen * 0.65)
-    )
+  const kpiMeta: Record<KpiKey, KpiChartMeta> = useMemo(
+    () => ({
+      weightedPipeline: {
+        title: 'Forecast (Commit + Best Case) vs Weighted Pipeline',
+        subtitle: 'Proyección ponderada mensual e ingresos cerrados frente a la meta',
+        primaryLabel: 'Forecast + Facturado',
+        secondaryLabel: 'Weighted Pipeline + Facturado',
+        targetLabel: `Meta Mensual (${fmtCurrency(quotaClp, false)})`,
+        primaryColor: '#00B4D8',
+        secondaryColor: '#C6F432',
+        unitType: 'currency',
+        getPrimary: (m) => m.forecast + m.closedWon,
+        getSecondary: (m) => m.weighted + m.closedWon,
+        getTarget: (q) => q,
+      },
+      pipelineCoverage: {
+        title: 'Evolución de Pipeline Coverage (Ratio × sobre Meta)',
+        subtitle: 'Relación entre volumen de oportunidades calificadas y cuota mensual (Óptimo ≥ 3.0×)',
+        primaryLabel: 'Cobertura Total (× Meta)',
+        secondaryLabel: 'Cobertura Ponderada (× Meta)',
+        targetLabel: 'Ratio Óptimo B2B (3.0×)',
+        primaryColor: '#00B4D8',
+        secondaryColor: '#C6F432',
+        unitType: 'ratio',
+        getPrimary: (m) => m.coverageRatio,
+        getSecondary: (m) =>
+          Number(((m.weighted + m.closedWon) / Math.max(1, quotaClp)).toFixed(2)),
+        getTarget: () => 3.0,
+      },
+      forecastAccuracy: {
+        title: 'Calibración & Forecast Accuracy (%) por Período',
+        subtitle: 'Precisión entre compromisos de cierre (Commit + Best Case) y facturación proyectada',
+        primaryLabel: 'Forecast Accuracy (%)',
+        secondaryLabel: 'Conversión Ponderada (%)',
+        targetLabel: 'Meta Precisión Gerencial (85%)',
+        primaryColor: '#00B4D8',
+        secondaryColor: '#C6F432',
+        unitType: 'percent',
+        getPrimary: (m) => m.accuracyPct,
+        getSecondary: (m) =>
+          m.pipelineOpen + m.closedWon > 0
+            ? Number(
+                (
+                  ((m.weighted + m.closedWon) / (m.pipelineOpen + m.closedWon)) *
+                  100
+                ).toFixed(1)
+              )
+            : 75,
+        getTarget: () => 85,
+      },
+      activePipelineValue: {
+        title: 'Masa Crítica de Cotizaciones Vigentes (Active Pipeline)',
+        subtitle: 'Volumen bruto total de ofertas abiertas vs valor ponderado por mes de cierre',
+        primaryLabel: 'Pipeline Bruto Abierto',
+        secondaryLabel: 'Weighted Pipeline',
+        targetLabel: `Meta Mensual (${fmtCurrency(quotaClp, false)})`,
+        primaryColor: '#38BDF8',
+        secondaryColor: '#C6F432',
+        unitType: 'currency',
+        getPrimary: (m) => m.pipelineOpen + m.closedWon,
+        getSecondary: (m) => m.weighted + m.closedWon,
+        getTarget: (q) => q,
+      },
+      weightedGrossMarginPct: {
+        title: 'Rentabilidad & Margen Bruto Ponderado (%)',
+        subtitle: 'Control de margen comercial sobre propuestas activas frente al umbral mínimo del 18%',
+        primaryLabel: 'Margen Bruto Ponderado (%)',
+        secondaryLabel: 'Margen Objetivo TECNOVOA (%)',
+        targetLabel: 'Piso Mínimo Rentabilidad (18%)',
+        primaryColor: '#C6F432',
+        secondaryColor: '#00B4D8',
+        unitType: 'percent',
+        getPrimary: (m) => m.marginPct,
+        getSecondary: () => 22.5,
+        getTarget: () => 18.0,
+      },
+      quoteToCloseDays: {
+        title: 'Velocidad Comercial: Quote-to-Close Time (Días)',
+        subtitle: 'Días promedio desde emisión de cotización hasta recepción de Orden de Compra (OC)',
+        primaryLabel: 'Ciclo Promedio Cierre (Días)',
+        secondaryLabel: 'Benchmark Venta Ágil (Días)',
+        targetLabel: 'SLA Máximo Recomendado (30 días)',
+        primaryColor: '#00B4D8',
+        secondaryColor: '#C6F432',
+        unitType: 'days',
+        getPrimary: (m) => m.avgCycleDays,
+        getSecondary: () => 15,
+        getTarget: () => 30,
+      },
+      winRate: {
+        title: 'Efectividad de Cierre: Win Rate Comercial (%)',
+        subtitle: 'Porcentaje de adjudicación sobre oportunidades resueltas y calificadas por período',
+        primaryLabel: 'Win Rate Efectivo (%)',
+        secondaryLabel: 'Probabilidad Media Cartera (%)',
+        targetLabel: 'Benchmark Competitivo B2B (50%)',
+        primaryColor: '#C6F432',
+        secondaryColor: '#00B4D8',
+        unitType: 'percent',
+        getPrimary: (m) => m.winRatePct,
+        getSecondary: (m) =>
+          m.pipelineOpen > 0
+            ? Number(((m.weighted / m.pipelineOpen) * 100).toFixed(1))
+            : 60,
+        getTarget: () => 50,
+      },
+      averageDealSize: {
+        title: 'Evolución del Ticket Promedio (Average Deal Size)',
+        subtitle: 'Tamaño medio por operación comercial en cada período fiscal vs ticket ponderado',
+        primaryLabel: 'Ticket Promedio Bruto',
+        secondaryLabel: 'Ticket Promedio Ponderado',
+        targetLabel: `Referencia 25% Meta (${fmtCurrency(quotaClp * 0.25, true)})`,
+        primaryColor: '#00B4D8',
+        secondaryColor: '#C6F432',
+        unitType: 'currency',
+        getPrimary: (m) => m.avgDealSize,
+        getSecondary: (m) =>
+          m.dealsCount > 0
+            ? Math.round((m.weighted + m.closedWon) / m.dealsCount)
+            : 0,
+        getTarget: (q) => q * 0.25,
+      },
+    }),
+    [quotaClp, currency, exchangeRate]
   );
 
-  const svgWidth = 760;
-  const svgHeight = 250;
-  const padLeft = 58;
-  const padRight = 24;
-  const padTop = 22;
-  const padBottom = 36;
+  const meta = kpiMeta[activeKpi];
+
+  const formatUnit = (val: number, compact = true) => {
+    if (meta.unitType === 'currency') return fmtCurrency(val, compact);
+    if (meta.unitType === 'ratio') return `${val.toFixed(2)}×`;
+    if (meta.unitType === 'percent') return `${val.toFixed(1)}%`;
+    return `${Math.round(val)}d`;
+  };
+
+  // Slice monthlyData according to timeline From - To indices
+  const safeStart = Math.max(0, Math.min(rangeStartIdx, monthlyData.length - 1));
+  const safeEnd = Math.max(safeStart, Math.min(rangeEndIdx, monthlyData.length - 1));
+  const visibleData = useMemo(
+    () => monthlyData.slice(safeStart, safeEnd + 1),
+    [monthlyData, safeStart, safeEnd]
+  );
+
+  const primarySeries = visibleData.map((m) => meta.getPrimary(m));
+  const secondarySeries = visibleData.map((m) => meta.getSecondary(m));
+  const targetValue = meta.getTarget(quotaClp);
+
+  const maxVal = Math.max(
+    targetValue * 1.3,
+    ...primarySeries,
+    ...secondarySeries,
+    1
+  );
+
+  // Full-bleed edge-to-edge SVG coordinates with diffused soft side fade
+  const svgWidth = 960;
+  const svgHeight = 265;
+  const padLeft = 18;
+  const padRight = 18;
+  const padTop = 24;
+  const padBottom = 34;
   const plotW = svgWidth - padLeft - padRight;
   const plotH = svgHeight - padTop - padBottom;
 
-  const getX = (i: number) => {
-    if (monthlyData.length <= 1) return padLeft + plotW / 2;
-    return padLeft + (i / (monthlyData.length - 1)) * plotW;
+  const getX = (i: number, total: number) => {
+    if (total <= 1) return padLeft + plotW / 2;
+    return padLeft + (i / (total - 1)) * plotW;
   };
 
   const getY = (val: number) => {
@@ -48,46 +223,78 @@ export const ForecastChart: React.FC<Props> = ({
     return padTop + plotH - (clamped / maxVal) * plotH;
   };
 
-  const quotaY = getY(quotaClp);
+  const targetY = getY(targetValue);
 
-  // Build SVG path for Area/Line mode
-  const buildPath = (values: number[]) => {
+  // Smooth cubic bezier curve generator that extends with soft horizon tails to left & right canvas edges
+  const buildSmoothLine = (values: number[], extendEdges = true) => {
     if (values.length === 0) return '';
-    return values
-      .map((v, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(v).toFixed(1)}`)
-      .join(' ');
+    const pts = values.map((v, i) => ({
+      x: getX(i, values.length),
+      y: getY(v),
+    }));
+
+    if (extendEdges && pts.length >= 1) {
+      const first = pts[0];
+      const last = pts[pts.length - 1];
+      pts.unshift({ x: 0, y: Math.min(padTop + plotH - 4, first.y + 12) });
+      pts.push({ x: svgWidth, y: Math.min(padTop + plotH - 4, last.y + 10) });
+    }
+
+    if (pts.length === 1) {
+      return `M 0 ${pts[0].y.toFixed(1)} L ${svgWidth} ${pts[0].y.toFixed(1)}`;
+    }
+
+    let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i];
+      const p1 = pts[i + 1];
+      const cpx1 = p0.x + (p1.x - p0.x) * 0.45;
+      const cpy1 = p0.y;
+      const cpx2 = p0.x + (p1.x - p0.x) * 0.55;
+      const cpy2 = p1.y;
+      d += ` C ${cpx1.toFixed(1)} ${cpy1.toFixed(1)}, ${cpx2.toFixed(1)} ${cpy2.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+    }
+    return d;
   };
 
-  const buildArea = (values: number[]) => {
+  const buildSmoothArea = (values: number[]) => {
     if (values.length === 0) return '';
-    const line = buildPath(values);
-    const firstX = getX(0).toFixed(1);
-    const lastX = getX(values.length - 1).toFixed(1);
+    const line = buildSmoothLine(values, true);
     const bottomY = (padTop + plotH).toFixed(1);
-    return `${line} L ${lastX} ${bottomY} L ${firstX} ${bottomY} Z`;
+    return `${line} L ${svgWidth} ${bottomY} L 0 ${bottomY} Z`;
   };
-
-  const forecastSeries = monthlyData.map((m) => m.forecast + m.closedWon);
-  const weightedSeries = monthlyData.map((m) => m.weighted + m.closedWon);
 
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map((t) => t * maxVal);
 
+  const shortMonthName = (m: string) =>
+    m
+      .replace('Septiembre ', 'Sep ')
+      .replace('Noviembre ', 'Nov ')
+      .replace('Diciembre ', 'Dic ')
+      .replace('Octubre ', 'Oct ')
+      .replace('Agosto ', 'Ago ')
+      .replace('Enero ', 'Ene ')
+      .replace('Marzo ', 'Mar ');
+
   return (
     <div className="rounded-xl p-5 border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm flex flex-col justify-between h-full">
-      {/* Header & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      {/* Header & View Mode Controls */}
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-[#2A5FFF]/10 text-[#2A5FFF] dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] font-semibold">
-              Curva Comercial CDU
+              KPI Dinámico · {activeKpi}
             </span>
             <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-              Regla Fiscal Corte Día 25
+              Haz clic en cualquier tarjeta KPI abajo para cambiar este gráfico
             </span>
           </div>
           <h2 className="text-lg font-serif font-bold text-slate-900 dark:text-white mt-1">
-            Forecast (Commit + Best Case) vs Weighted Pipeline
+            {meta.title}
           </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {meta.subtitle}
+          </p>
         </div>
 
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] p-1 rounded-lg border border-slate-200 dark:border-slate-800">
@@ -100,7 +307,7 @@ export const ForecastChart: React.FC<Props> = ({
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            Tendencia
+            Tendencia Difuminada
           </button>
           <button
             onClick={() => setChartType('bars')}
@@ -128,113 +335,177 @@ export const ForecastChart: React.FC<Props> = ({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-4 text-xs mb-2">
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-[#00B4D8] inline-block" />
-          <span className="text-slate-600 dark:text-slate-300 font-medium">
-            Forecast + Facturado
-          </span>
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs mb-2">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-3 h-3 rounded-sm inline-block"
+              style={{ backgroundColor: meta.primaryColor }}
+            />
+            <span className="text-slate-600 dark:text-slate-300 font-medium">
+              {meta.primaryLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-3 h-3 rounded-sm inline-block"
+              style={{ backgroundColor: meta.secondaryColor }}
+            />
+            <span className="text-slate-600 dark:text-slate-300 font-medium">
+              {meta.secondaryLabel}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-4 h-0.5 border-t-2 border-dashed border-rose-400 inline-block" />
+            <span className="text-slate-600 dark:text-slate-300 font-medium">
+              {meta.targetLabel}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded-sm bg-[#C6F432] inline-block" />
-          <span className="text-slate-600 dark:text-slate-300 font-medium">
-            Weighted Pipeline + Facturado
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-4 h-0.5 border-t-2 border-dashed border-rose-400 inline-block" />
-          <span className="text-slate-600 dark:text-slate-300 font-medium">
-            Meta Mensual ({fmt(quotaClp, false)})
-          </span>
-        </div>
+
+        <span className="text-[11px] font-mono text-slate-400">
+          Ventana activa: {shortMonthName(visibleData[0]?.month || '')} →{' '}
+          {shortMonthName(visibleData[visibleData.length - 1]?.month || '')}
+        </span>
       </div>
 
-      {/* SVG Canvas */}
-      <div className="relative w-full overflow-x-auto">
+      {/* Full-Width Edge-to-Edge SVG Canvas with Diffused Ambient Glow */}
+      <div className="relative w-full overflow-hidden rounded-xl bg-slate-50/70 dark:bg-[#081024] border border-slate-200/70 dark:border-slate-800/90">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-64 select-none overflow-visible"
+          preserveAspectRatio="none"
+          className="w-full h-64 select-none block"
         >
           <defs>
-            <linearGradient id="gradForecast" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#00B4D8" stopOpacity="0.38" />
-              <stop offset="100%" stopColor="#00B4D8" stopOpacity="0.02" />
+            {/* Vertical fill gradients */}
+            <linearGradient id="gradPrimaryFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={meta.primaryColor} stopOpacity="0.48" />
+              <stop offset="55%" stopColor={meta.primaryColor} stopOpacity="0.18" />
+              <stop offset="100%" stopColor={meta.primaryColor} stopOpacity="0.0" />
             </linearGradient>
-            <linearGradient id="gradWeighted" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#C6F432" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#C6F432" stopOpacity="0.02" />
+            <linearGradient id="gradSecondaryFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={meta.secondaryColor} stopOpacity="0.38" />
+              <stop offset="60%" stopColor={meta.secondaryColor} stopOpacity="0.12" />
+              <stop offset="100%" stopColor={meta.secondaryColor} stopOpacity="0.0" />
             </linearGradient>
+
+            {/* Horizontal edge-fade mask so the chart blends smoothly into the left & right borders */}
+            <linearGradient id="edgeFadeGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="white" stopOpacity="0.08" />
+              <stop offset="7%" stopColor="white" stopOpacity="1" />
+              <stop offset="93%" stopColor="white" stopOpacity="1" />
+              <stop offset="100%" stopColor="white" stopOpacity="0.08" />
+            </linearGradient>
+            <mask id="edgeFadeMask">
+              <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="url(#edgeFadeGradient)" />
+            </mask>
+
+            {/* Soft neon glow filter for the curves */}
+            <filter id="glowFilter" x="-10%" y="-20%" width="120%" height="140%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {/* Horizontal Grid Lines */}
+          {/* Subtle Ambient Radial Spotlights filling left, center & right zones */}
+          <ellipse
+            cx={svgWidth * 0.18}
+            cy={padTop + plotH * 0.55}
+            rx={220}
+            ry={95}
+            fill={meta.primaryColor}
+            opacity="0.07"
+          />
+          <ellipse
+            cx={svgWidth * 0.82}
+            cy={padTop + plotH * 0.45}
+            rx={240}
+            ry={105}
+            fill={meta.secondaryColor}
+            opacity="0.07"
+          />
+
+          {/* Horizontal Grid Lines across full width */}
           {yTicks.map((tick, idx) => {
             const y = getY(tick);
             return (
               <g key={idx}>
                 <line
-                  x1={padLeft}
+                  x1={0}
                   y1={y}
-                  x2={svgWidth - padRight}
+                  x2={svgWidth}
                   y2={y}
                   stroke="currentColor"
-                  className="text-slate-200 dark:text-slate-800"
+                  className="text-slate-200/90 dark:text-slate-800/90"
                   strokeDasharray="3 3"
                   strokeWidth="1"
                 />
                 <text
-                  x={padLeft - 8}
-                  y={y + 4}
-                  textAnchor="end"
+                  x={10}
+                  y={y - 5}
+                  textAnchor="start"
                   className="text-[10px] font-mono fill-slate-400 dark:fill-slate-500"
                 >
-                  {fmt(tick, true)}
+                  {formatUnit(tick, true)}
                 </text>
               </g>
             );
           })}
 
-          {/* Target Quota Line */}
+          {/* Target Reference Line */}
           <line
-            x1={padLeft}
-            y1={quotaY}
-            x2={svgWidth - padRight}
-            y2={quotaY}
+            x1={0}
+            y1={targetY}
+            x2={svgWidth}
+            y2={targetY}
             stroke="#FB7185"
             strokeWidth="1.5"
-            strokeDasharray="5 4"
+            strokeDasharray="6 4"
           />
           <text
-            x={svgWidth - padRight - 4}
-            y={quotaY - 5}
+            x={svgWidth - 12}
+            y={Math.max(14, targetY - 6)}
             textAnchor="end"
             className="text-[10px] font-mono fill-rose-400 font-semibold"
           >
-            META {fmt(quotaClp, true)}
+            REF: {formatUnit(targetValue, true)}
           </text>
 
-          {/* Chart Representations */}
-          {chartType === 'area' && (
-            <>
-              <path d={buildArea(forecastSeries)} fill="url(#gradForecast)" />
-              <path
-                d={buildPath(forecastSeries)}
-                fill="none"
-                stroke="#00B4D8"
-                strokeWidth="2.5"
-              />
+          {/* Main Plotted Series with Edge-Fade Diffused Mask */}
+          <g mask="url(#edgeFadeMask)">
+            {chartType === 'area' && (
+              <>
+                <path d={buildSmoothArea(primarySeries)} fill="url(#gradPrimaryFill)" />
+                <path
+                  d={buildSmoothLine(primarySeries, true)}
+                  fill="none"
+                  stroke={meta.primaryColor}
+                  strokeWidth="3"
+                  filter="url(#glowFilter)"
+                />
 
-              <path d={buildArea(weightedSeries)} fill="url(#gradWeighted)" />
-              <path
-                d={buildPath(weightedSeries)}
-                fill="none"
-                stroke="#C6F432"
-                strokeWidth="2.5"
-              />
+                <path d={buildSmoothArea(secondarySeries)} fill="url(#gradSecondaryFill)" />
+                <path
+                  d={buildSmoothLine(secondarySeries, true)}
+                  fill="none"
+                  stroke={meta.secondaryColor}
+                  strokeWidth="2.5"
+                  filter="url(#glowFilter)"
+                />
+              </>
+            )}
 
-              {monthlyData.map((m, i) => {
-                const cx = getX(i);
-                const cyF = getY(forecastSeries[i]);
-                const cyW = getY(weightedSeries[i]);
+            {chartType === 'bars' &&
+              visibleData.map((m, i) => {
+                const cx = getX(i, visibleData.length);
+                const barW = Math.min(28, Math.max(14, plotW / (visibleData.length * 3.2)));
+                const yP = getY(primarySeries[i]);
+                const hP = padTop + plotH - yP;
+                const yS = getY(secondarySeries[i]);
+                const hS = padTop + plotH - yS;
                 return (
                   <g
                     key={m.month}
@@ -243,166 +514,263 @@ export const ForecastChart: React.FC<Props> = ({
                     className="cursor-pointer"
                   >
                     <rect
-                      x={cx - 28}
-                      y={padTop}
-                      width={56}
-                      height={plotH}
-                      fill="transparent"
+                      x={cx - barW - 3}
+                      y={yP}
+                      width={barW}
+                      height={Math.max(3, hP)}
+                      rx={4}
+                      fill={meta.primaryColor}
+                      opacity={0.9}
                     />
-                    <circle
-                      cx={cx}
-                      cy={cyF}
-                      r={hoveredIdx === i ? 5.5 : 4}
-                      fill="#00B4D8"
-                      stroke="#0B132B"
-                      strokeWidth="1.5"
-                    />
-                    <circle
-                      cx={cx}
-                      cy={cyW}
-                      r={hoveredIdx === i ? 5.5 : 4}
-                      fill="#C6F432"
-                      stroke="#0B132B"
-                      strokeWidth="1.5"
+                    <rect
+                      x={cx + 3}
+                      y={yS}
+                      width={barW}
+                      height={Math.max(3, hS)}
+                      rx={4}
+                      fill={meta.secondaryColor}
+                      opacity={0.9}
                     />
                   </g>
                 );
               })}
-            </>
-          )}
 
-          {chartType === 'bars' &&
-            monthlyData.map((m, i) => {
-              const cx = getX(i);
-              const barW = 16;
-              const yF = getY(forecastSeries[i]);
-              const hF = padTop + plotH - yF;
-              const yW = getY(weightedSeries[i]);
-              const hW = padTop + plotH - yW;
-              return (
-                <g
-                  key={m.month}
-                  onMouseEnter={() => setHoveredIdx(i)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  className="cursor-pointer"
-                >
-                  <rect
-                    x={cx - barW - 2}
-                    y={yF}
-                    width={barW}
-                    height={Math.max(2, hF)}
-                    rx={3}
-                    fill="#00B4D8"
-                  />
-                  <rect
-                    x={cx + 2}
-                    y={yW}
-                    width={barW}
-                    height={Math.max(2, hW)}
-                    rx={3}
-                    fill="#C6F432"
-                  />
-                </g>
-              );
-            })}
+            {chartType === 'stacked' &&
+              visibleData.map((m, i) => {
+                const cx = getX(i, visibleData.length);
+                const barW = Math.min(36, Math.max(18, plotW / (visibleData.length * 2.5)));
+                const wonH = (Math.min(maxVal, m.closedWon) / maxVal) * plotH;
+                const commitH = (Math.min(maxVal, m.commit) / maxVal) * plotH;
+                const bestH = (Math.min(maxVal, m.bestCase) / maxVal) * plotH;
+                const yWon = padTop + plotH - wonH;
+                const yCommit = yWon - commitH;
+                const yBest = yCommit - bestH;
+                return (
+                  <g
+                    key={m.month}
+                    onMouseEnter={() => setHoveredIdx(i)}
+                    onMouseLeave={() => setHoveredIdx(null)}
+                    className="cursor-pointer"
+                  >
+                    <rect
+                      x={cx - barW / 2}
+                      y={yWon}
+                      width={barW}
+                      height={Math.max(0, wonH)}
+                      fill="#10B981"
+                    />
+                    <rect
+                      x={cx - barW / 2}
+                      y={yCommit}
+                      width={barW}
+                      height={Math.max(0, commitH)}
+                      fill="#00B4D8"
+                    />
+                    <rect
+                      x={cx - barW / 2}
+                      y={yBest}
+                      width={barW}
+                      height={Math.max(0, bestH)}
+                      rx={3}
+                      fill="#C6F432"
+                    />
+                  </g>
+                );
+              })}
+          </g>
 
-          {chartType === 'stacked' &&
-            monthlyData.map((m, i) => {
-              const cx = getX(i);
-              const barW = 24;
-              const wonH = (Math.min(maxVal, m.closedWon) / maxVal) * plotH;
-              const commitH = (Math.min(maxVal, m.commit) / maxVal) * plotH;
-              const bestH = (Math.min(maxVal, m.bestCase) / maxVal) * plotH;
-              const yWon = padTop + plotH - wonH;
-              const yCommit = yWon - commitH;
-              const yBest = yCommit - bestH;
-              return (
-                <g
-                  key={m.month}
-                  onMouseEnter={() => setHoveredIdx(i)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  className="cursor-pointer"
-                >
-                  {/* Closed Won */}
-                  <rect
-                    x={cx - barW / 2}
-                    y={yWon}
-                    width={barW}
-                    height={Math.max(0, wonH)}
-                    fill="#10B981"
-                  />
-                  {/* Commit */}
-                  <rect
-                    x={cx - barW / 2}
-                    y={yCommit}
-                    width={barW}
-                    height={Math.max(0, commitH)}
-                    fill="#00B4D8"
-                  />
-                  {/* Best Case */}
-                  <rect
-                    x={cx - barW / 2}
-                    y={yBest}
-                    width={barW}
-                    height={Math.max(0, bestH)}
-                    rx={2}
-                    fill="#C6F432"
-                  />
-                </g>
-              );
-            })}
-
-          {/* X Axis Labels */}
-          {monthlyData.map((m, i) => {
-            const cx = getX(i);
-            const shortMonth = m.month
-              .replace('Septiembre ', 'Sep ')
-              .replace('Noviembre ', 'Nov ')
-              .replace('Diciembre ', 'Dic ')
-              .replace('Octubre ', 'Oct ')
-              .replace('Agosto ', 'Ago ')
-              .replace('Enero ', 'Ene ')
-              .replace('Marzo ', 'Mar ');
+          {/* Interactive Data Points & X-Axis Labels */}
+          {visibleData.map((m, i) => {
+            const cx = getX(i, visibleData.length);
+            const cyP = getY(primarySeries[i]);
+            const cyS = getY(secondarySeries[i]);
+            const isHov = hoveredIdx === i;
             return (
-              <text
+              <g
                 key={m.month}
-                x={cx}
-                y={svgHeight - 10}
-                textAnchor="middle"
-                className={`text-[11px] font-mono ${
-                  hoveredIdx === i
-                    ? 'fill-[#2A5FFF] dark:fill-[#00B4D8] font-bold'
-                    : 'fill-slate-500 dark:fill-slate-400'
-                }`}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                className="cursor-pointer"
               >
-                {shortMonth}
-              </text>
+                {isHov && (
+                  <line
+                    x1={cx}
+                    y1={padTop}
+                    x2={cx}
+                    y2={padTop + plotH}
+                    stroke={meta.primaryColor}
+                    strokeWidth="1"
+                    strokeDasharray="2 2"
+                  />
+                )}
+                <rect
+                  x={cx - 32}
+                  y={padTop}
+                  width={64}
+                  height={plotH}
+                  fill="transparent"
+                />
+                {chartType === 'area' && (
+                  <>
+                    <circle
+                      cx={cx}
+                      cy={cyP}
+                      r={isHov ? 6 : 4.5}
+                      fill={meta.primaryColor}
+                      stroke="#0B132B"
+                      strokeWidth="1.5"
+                    />
+                    <circle
+                      cx={cx}
+                      cy={cyS}
+                      r={isHov ? 6 : 4.5}
+                      fill={meta.secondaryColor}
+                      stroke="#0B132B"
+                      strokeWidth="1.5"
+                    />
+                  </>
+                )}
+                <text
+                  x={cx}
+                  y={svgHeight - 10}
+                  textAnchor="middle"
+                  className={`text-[11px] font-mono ${
+                    isHov
+                      ? 'fill-[#2A5FFF] dark:fill-[#00B4D8] font-bold'
+                      : 'fill-slate-500 dark:fill-slate-400'
+                  }`}
+                >
+                  {shortMonthName(m.month)}
+                </text>
+              </g>
             );
           })}
         </svg>
+      </div>
 
-        {/* Interactive Tooltip Summary Banner */}
-        {hoveredIdx !== null && monthlyData[hoveredIdx] && (
-          <div className="mt-2 p-2.5 rounded-lg bg-slate-100 dark:bg-[#0B132B] border border-slate-200 dark:border-[#00B4D8]/30 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <span className="font-serif font-bold text-slate-900 dark:text-white">
-              {monthlyData[hoveredIdx].month} ({monthlyData[hoveredIdx].dealsCount} ops)
+      {/* Interactive Hover Detail Banner */}
+      {hoveredIdx !== null && visibleData[hoveredIdx] && (
+        <div className="mt-2.5 p-2.5 rounded-lg bg-slate-100 dark:bg-[#0B132B] border border-slate-200 dark:border-[#00B4D8]/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="font-serif font-bold text-slate-900 dark:text-white">
+            {visibleData[hoveredIdx].month} ({visibleData[hoveredIdx].dealsCount} negocios)
+          </span>
+          <div className="flex flex-wrap items-center gap-4 font-mono">
+            <span className="text-[#2A5FFF] dark:text-[#00B4D8] font-semibold">
+              {meta.primaryLabel}: {formatUnit(primarySeries[hoveredIdx], false)}
             </span>
-            <div className="flex flex-wrap items-center gap-4 font-mono">
-              <span className="text-emerald-600 dark:text-emerald-400">
-                Facturado: {fmt(monthlyData[hoveredIdx].closedWon, false)}
-              </span>
-              <span className="text-[#2A5FFF] dark:text-[#00B4D8]">
-                Forecast: {fmt(monthlyData[hoveredIdx].forecast, false)}
-              </span>
-              <span className="text-lime-700 dark:text-[#C6F432]">
-                Weighted: {fmt(monthlyData[hoveredIdx].weighted, false)}
-              </span>
-              <span className="text-slate-500 dark:text-slate-400">
-                Pipeline Abierto: {fmt(monthlyData[hoveredIdx].pipelineOpen, false)}
-              </span>
-            </div>
+            <span className="text-emerald-700 dark:text-[#C6F432] font-semibold">
+              {meta.secondaryLabel}: {formatUnit(secondarySeries[hoveredIdx], false)}
+            </span>
+            <span className="text-slate-500 dark:text-slate-400">
+              Facturado: {fmtCurrency(visibleData[hoveredIdx].closedWon, false)}
+            </span>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* Interactive Timeline Brush / Range Scrubber (Desde - Hasta) */}
+      <div className="mt-3 pt-3 border-t border-slate-200/80 dark:border-slate-800/80">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-xs">
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#2A5FFF] dark:text-[#00B4D8]" />
+            <span className="font-semibold text-slate-700 dark:text-slate-200">
+              Línea de Tiempo de Análisis (Desde / Hasta):
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] font-mono uppercase text-slate-400">Desde:</span>
+              <select
+                value={safeStart}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  onRangeChange(val, Math.max(val, safeEnd));
+                }}
+                className="bg-transparent font-mono font-semibold text-slate-900 dark:text-[#00B4D8] focus:outline-none cursor-pointer"
+              >
+                {monthlyData.map((m, idx) => (
+                  <option
+                    key={m.month}
+                    value={idx}
+                    disabled={idx > safeEnd}
+                    className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white"
+                  >
+                    {m.month}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <span className="text-slate-400 font-mono">→</span>
+
+            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#0B132B] px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
+              <span className="text-[10px] font-mono uppercase text-slate-400">Hasta:</span>
+              <select
+                value={safeEnd}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  onRangeChange(Math.min(safeStart, val), val);
+                }}
+                className="bg-transparent font-mono font-semibold text-slate-900 dark:text-[#C6F432] focus:outline-none cursor-pointer"
+              >
+                {monthlyData.map((m, idx) => (
+                  <option
+                    key={m.month}
+                    value={idx}
+                    disabled={idx < safeStart}
+                    className="bg-white dark:bg-[#0B132B] text-slate-900 dark:text-white"
+                  >
+                    {m.month}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(safeStart > 0 || safeEnd < monthlyData.length - 1) && (
+              <button
+                onClick={() => onRangeChange(0, monthlyData.length - 1)}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white border border-slate-200 dark:border-slate-800"
+                title="Restablecer rango completo"
+              >
+                <RotateCcw className="w-3 h-3" /> Todo
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Visual Timeline Pill Track */}
+        <div className="mt-2.5 grid grid-cols-7 gap-1.5">
+          {monthlyData.map((m, idx) => {
+            const inRange = idx >= safeStart && idx <= safeEnd;
+            const isBoundary = idx === safeStart || idx === safeEnd;
+            return (
+              <button
+                key={m.month}
+                type="button"
+                onClick={() => {
+                  if (idx < safeStart) onRangeChange(idx, safeEnd);
+                  else if (idx > safeEnd) onRangeChange(safeStart, idx);
+                  else if (safeStart === safeEnd) {
+                    onRangeChange(0, monthlyData.length - 1);
+                  } else {
+                    onRangeChange(idx, idx);
+                  }
+                }}
+                className={`py-1 px-1.5 rounded-md text-[10px] font-mono transition border text-center truncate ${
+                  isBoundary
+                    ? 'bg-[#2A5FFF] text-white border-[#2A5FFF] dark:bg-[#00B4D8] dark:text-[#0B132B] dark:border-[#00B4D8] font-bold shadow-sm'
+                    : inRange
+                    ? 'bg-[#2A5FFF]/10 text-[#2A5FFF] border-[#2A5FFF]/30 dark:bg-[#00B4D8]/15 dark:text-[#00B4D8] dark:border-[#00B4D8]/30 font-medium'
+                    : 'bg-slate-100/70 text-slate-400 border-transparent dark:bg-[#0B132B]/50 dark:text-slate-600'
+                }`}
+                title={`Clic para ajustar ventana a ${m.month}`}
+              >
+                {shortMonthName(m.month)}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

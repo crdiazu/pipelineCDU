@@ -8,8 +8,9 @@ import {
   Clock,
   Award,
   BarChart3,
+  Sparkles,
 } from 'lucide-react';
-import { CommercialKpis } from '../utils/kpi';
+import { CommercialKpis, KpiKey } from '../utils/kpi';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
   currency: CurrencyCode;
   exchangeRate: number;
   selectedBlock?: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
+  activeKpi: KpiKey;
+  onSelectKpi: (key: KpiKey) => void;
 }
 
 export const KpiCard: React.FC<Props> = ({
@@ -24,12 +27,26 @@ export const KpiCard: React.FC<Props> = ({
   currency,
   exchangeRate,
   selectedBlock = 'Todos',
+  activeKpi,
+  onSelectKpi,
 }) => {
   const fmt = (val: number, compact = false) =>
     formatCurrency(val, currency, exchangeRate, compact);
 
-  const cards = [
+  const cards: {
+    key: KpiKey;
+    block: 'Forecast' | 'Cotizaciones' | 'Conversión';
+    title: string;
+    formula: string;
+    value: string;
+    subValue: string;
+    badge: string;
+    badgePositive: boolean;
+    impact: string;
+    icon: React.FC<{ className?: string }>;
+  }[] = [
     {
+      key: 'weightedPipeline',
       block: 'Forecast',
       title: 'Weighted Pipeline',
       formula: '∑(Valor Cotizado × % Probabilidad)',
@@ -41,6 +58,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: TrendingUp,
     },
     {
+      key: 'pipelineCoverage',
       block: 'Forecast',
       title: 'Pipeline Coverage',
       formula: 'Pipeline Calificado / Cuota Restante',
@@ -52,6 +70,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Target,
     },
     {
+      key: 'forecastAccuracy',
       block: 'Forecast',
       title: 'Forecast Accuracy',
       formula: '(1 − |Forecast − Real| / Real) × 100',
@@ -63,6 +82,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Activity,
     },
     {
+      key: 'activePipelineValue',
       block: 'Cotizaciones',
       title: 'Active Pipeline Value',
       formula: 'Suma total de cotizaciones vigentes',
@@ -74,6 +94,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Briefcase,
     },
     {
+      key: 'weightedGrossMarginPct',
       block: 'Cotizaciones',
       title: 'Margen Bruto Ponderado',
       formula: '∑(Margen $ × Prob.) / Venta Ponderada',
@@ -85,6 +106,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Percent,
     },
     {
+      key: 'quoteToCloseDays',
       block: 'Cotizaciones',
       title: 'Quote-to-Close Time',
       formula: 'Días promedio emisión → recepción OC',
@@ -96,6 +118,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Clock,
     },
     {
+      key: 'winRate',
       block: 'Conversión',
       title: 'Win Rate Comercial',
       formula: '(Cotiz. Ganadas / Presentadas Cerradas) × 100',
@@ -107,6 +130,7 @@ export const KpiCard: React.FC<Props> = ({
       icon: Award,
     },
     {
+      key: 'averageDealSize',
       block: 'Conversión',
       title: 'Average Deal Size',
       formula: 'Facturación Total / N° Deals Ganados',
@@ -126,19 +150,40 @@ export const KpiCard: React.FC<Props> = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-      {visibleCards.map((c, i) => {
+      {visibleCards.map((c) => {
         const Icon = c.icon;
+        const isSelected = activeKpi === c.key;
         return (
           <div
-            key={i}
-            className="group relative rounded-xl p-4 transition-all duration-200 border bg-white/90 border-[#DDD4C5] hover:border-[#2A5FFF]/50 dark:bg-[#101D38]/90 dark:border-slate-800/80 dark:hover:border-[#00B4D8]/50 shadow-sm flex flex-col justify-between"
+            key={c.key}
+            onClick={() => onSelectKpi(c.key)}
+            role="button"
+            tabIndex={0}
+            className={`group relative rounded-xl p-4 transition-all duration-200 border cursor-pointer flex flex-col justify-between ${
+              isSelected
+                ? 'bg-[#2A5FFF]/5 border-[#2A5FFF] ring-2 ring-[#2A5FFF]/25 dark:bg-[#00B4D8]/10 dark:border-[#00B4D8] dark:ring-[#00B4D8]/30 shadow-md'
+                : 'bg-white/90 border-[#DDD4C5] hover:border-[#2A5FFF]/50 dark:bg-[#101D38]/90 dark:border-slate-800/80 dark:hover:border-[#00B4D8]/50 shadow-sm'
+            }`}
           >
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-600 dark:bg-[#0B132B] dark:text-[#00B4D8] border border-slate-200 dark:border-[#00B4D8]/20">
-                  {c.block}
-                </span>
-                <div className="p-1.5 rounded-lg bg-slate-100 text-[#2A5FFF] dark:bg-[#0B132B] dark:text-[#00B4D8]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded font-semibold bg-slate-100 text-slate-600 dark:bg-[#0B132B] dark:text-[#00B4D8] border border-slate-200 dark:border-[#00B4D8]/20">
+                    {c.block}
+                  </span>
+                  {isSelected && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B] font-bold">
+                      <Sparkles className="w-2.5 h-2.5" /> En Gráfico
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={`p-1.5 rounded-lg transition ${
+                    isSelected
+                      ? 'bg-[#2A5FFF] text-white dark:bg-[#00B4D8] dark:text-[#0B132B]'
+                      : 'bg-slate-100 text-[#2A5FFF] dark:bg-[#0B132B] dark:text-[#00B4D8]'
+                  }`}
+                >
                   <Icon className="w-3.5 h-3.5" />
                 </div>
               </div>
@@ -183,4 +228,3 @@ export const KpiCard: React.FC<Props> = ({
 };
 
 export default KpiCard;
-

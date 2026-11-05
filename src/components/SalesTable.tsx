@@ -132,36 +132,36 @@ export const SalesTable: React.FC<Props> = ({
   return (
     <div className="rounded-xl border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm overflow-hidden">
       {/* Toolbar */}
-      <div className="p-4 border-b border-[#DDD4C5] dark:border-slate-800 flex flex-wrap items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-4 border-b border-[#DDD4C5] dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-serif font-bold text-slate-900 dark:text-white">
+          <h3 className="text-sm sm:text-base font-serif font-bold text-slate-900 dark:text-white">
             Matriz Interactiva de Cotizaciones & Oportunidades CDU
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Mostrando {filtered.length} de {data.length} registros · Haz clic en una fila para inspeccionar expediente
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+            Mostrando {filtered.length} de {data.length} registros · Toca una oportunidad para ver detalle
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-initial min-w-[180px]">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cliente, COT, marca, acción..."
-              className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B132B] text-slate-900 dark:text-white focus:outline-none focus:border-[#00B4D8]"
+              placeholder="Cliente, COT, marca..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B132B] text-slate-900 dark:text-white focus:outline-none focus:border-[#00B4D8]"
             />
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#0B132B] p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#0B132B] p-1 rounded-lg border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto max-w-full">
             {['Abierta', 'Closed Won', 'Closed Lost', 'Todos'].map((st) => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-2.5 py-1 rounded-md font-medium transition ${
+                className={`px-2 py-1 rounded-md font-medium transition whitespace-nowrap ${
                   statusFilter === st
                     ? 'bg-white text-slate-900 shadow-sm dark:bg-[#101D38] dark:text-[#00B4D8]'
                     : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
@@ -199,8 +199,61 @@ export const SalesTable: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto max-h-[520px]">
+      {/* Mobile Card List (< md) */}
+      <div className="md:hidden divide-y divide-slate-200/70 dark:divide-slate-800/70 max-h-[540px] overflow-y-auto">
+        {filtered.map((row) => {
+          const isSelected = selectedDealId === row.id;
+          return (
+            <div
+              key={row.id}
+              onClick={() => onSelectDeal && onSelectDeal(row)}
+              className={`p-3.5 transition-colors cursor-pointer ${
+                isSelected
+                  ? 'bg-[#2A5FFF]/10 dark:bg-[#00B4D8]/15'
+                  : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'
+              }`}
+            >
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <ClientLogo client={row.client} size="sm" />
+                  <span className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                    {row.client}
+                  </span>
+                </div>
+                <span className="font-mono text-[11px] font-semibold text-[#2A5FFF] dark:text-[#00B4D8] shrink-0">
+                  {row.code}
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-700 dark:text-slate-200 line-clamp-2 mb-2">
+                {row.opportunity}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <VendorBadge brand={row.brand} />
+                <div className="text-right font-mono">
+                  <span className="font-bold text-slate-900 dark:text-white block">
+                    {fmt(row.estimatedAmount, false)}
+                  </span>
+                  <span className="text-[10px] text-emerald-700 dark:text-[#C6F432]">
+                    Pond: {fmt(row.weightedPipeline, true)} ({row.probability}%)
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                <span className="text-[10px] font-mono text-slate-500">
+                  {row.forecastCategory} · {row.closeMonth}
+                </span>
+                {getSlaBadge(row)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop Data Table (>= md) */}
+      <div className="hidden md:block overflow-x-auto max-h-[520px]">
         <table className="w-full text-left border-collapse">
           <thead className="sticky top-0 z-10 bg-[#F5F1E8] dark:bg-[#0B132B] text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-[#DDD4C5] dark:border-slate-800">
             <tr>
