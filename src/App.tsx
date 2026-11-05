@@ -30,6 +30,7 @@ import SalesTable from './components/SalesTable';
 import KanbanBoard from './components/KanbanBoard';
 import { ClientLogo, VendorBadge } from './components/ClientLogo';
 import CduAgentDrawer from './components/CduAgentDrawer';
+import PersistentTimeline from './components/PersistentTimeline';
 
 const initialDeals = loadPipeline();
 
@@ -551,6 +552,22 @@ export function App() {
               </button>
             </div>
           </header>
+
+          {/* Línea de Tiempo Siempre Presente across all tabs */}
+          <PersistentTimeline
+            monthlySeries={monthlySeries}
+            rangeStartIdx={safeStartIdx}
+            rangeEndIdx={safeEndIdx}
+            onRangeChange={(s, e) => {
+              setRangeStartIdx(s);
+              setRangeEndIdx(e);
+            }}
+            selectedPeriod={selectedPeriod}
+            onSelectPeriod={(p) => setSelectedPeriod(p)}
+            currency={currency}
+            exchangeRate={exchangeRate}
+            totalDeals={deals.length}
+          />
 
           {/* Main Workspace Body */}
           <main className="p-3.5 sm:p-6 space-y-5 sm:space-y-6 max-w-[1600px] w-full mx-auto">

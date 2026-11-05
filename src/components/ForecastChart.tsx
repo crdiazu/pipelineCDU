@@ -268,13 +268,18 @@ export const ForecastChart: React.FC<Props> = ({
 
   const shortMonthName = (m: string) =>
     m
-      .replace('Septiembre ', 'Sep ')
-      .replace('Noviembre ', 'Nov ')
-      .replace('Diciembre ', 'Dic ')
-      .replace('Octubre ', 'Oct ')
-      .replace('Agosto ', 'Ago ')
       .replace('Enero ', 'Ene ')
-      .replace('Marzo ', 'Mar ');
+      .replace('Febrero ', 'Feb ')
+      .replace('Marzo ', 'Mar ')
+      .replace('Abril ', 'Abr ')
+      .replace('Mayo ', 'May ')
+      .replace('Junio ', 'Jun ')
+      .replace('Julio ', 'Jul ')
+      .replace('Agosto ', 'Ago ')
+      .replace('Septiembre ', 'Sep ')
+      .replace('Octubre ', 'Oct ')
+      .replace('Noviembre ', 'Nov ')
+      .replace('Diciembre ', 'Dic ');
 
   return (
     <div className="rounded-xl p-5 border bg-white/95 border-[#DDD4C5] dark:bg-[#101D38]/90 dark:border-slate-800/80 shadow-sm flex flex-col justify-between h-full">
@@ -740,7 +745,7 @@ export const ForecastChart: React.FC<Props> = ({
         </div>
 
         {/* Visual Timeline Pill Track */}
-        <div className="mt-2.5 grid grid-cols-7 gap-1.5">
+        <div className="mt-2.5 flex items-center gap-1 sm:gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
           {monthlyData.map((m, idx) => {
             const inRange = idx >= safeStart && idx <= safeEnd;
             const isBoundary = idx === safeStart || idx === safeEnd;
