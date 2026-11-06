@@ -14,33 +14,30 @@ import {
   Clock,
   Award,
   DollarSign,
+  LucideIcon,
 } from 'lucide-react';
 
-interface Props {
-  kpis: CommercialKpis;
-  deals: DealRow[];
-  quotaClp: number;
-  currency: CurrencyCode;
-  exchangeRate: number;
-  selectedBlock: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
-  activeKpi: KpiKey;
-  onSelectKpi: (key: KpiKey) => void;
+export interface KpiCardData {
+  key: KpiKey;
+  block: 'Forecast' | 'Cotizaciones' | 'Conversión';
+  blockLabel: string;
+  title: string;
+  mainValue: string;
+  badge: string;
+  badgeColor: string;
+  mathFormula: string;
+  icon: LucideIcon;
 }
 
-export const KpiCard: React.FC<Props> = ({
-  kpis,
-  deals,
-  quotaClp,
-  currency,
-  exchangeRate,
-  selectedBlock,
-  activeKpi,
-  onSelectKpi,
-}) => {
+export function getKpiCardsList(
+  kpis: CommercialKpis,
+  currency: CurrencyCode,
+  exchangeRate: number
+): KpiCardData[] {
   const fmt = (val: number, compact = true) =>
     formatCurrency(val, currency, exchangeRate, compact);
 
-  const cards = [
+  return [
     {
       key: 'weightedPipeline' as KpiKey,
       block: 'Forecast',
@@ -145,6 +142,33 @@ export const KpiCard: React.FC<Props> = ({
       icon: DollarSign,
     },
   ];
+}
+
+interface Props {
+  kpis: CommercialKpis;
+  deals: DealRow[];
+  quotaClp: number;
+  currency: CurrencyCode;
+  exchangeRate: number;
+  selectedBlock: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
+  activeKpi: KpiKey;
+  onSelectKpi: (key: KpiKey) => void;
+}
+
+export const KpiCard: React.FC<Props> = ({
+  kpis,
+  deals,
+  quotaClp,
+  currency,
+  exchangeRate,
+  selectedBlock,
+  activeKpi,
+  onSelectKpi,
+}) => {
+  const fmt = (val: number, compact = true) =>
+    formatCurrency(val, currency, exchangeRate, compact);
+
+  const cards = getKpiCardsList(kpis, currency, exchangeRate);
 
   const visibleCards =
     selectedBlock === 'Todos'
@@ -152,7 +176,7 @@ export const KpiCard: React.FC<Props> = ({
       : cards.filter((c) => c.block === selectedBlock);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 auto-rows-fr">
       {visibleCards.map((c) => {
         const Icon = c.icon;
         const isActive = activeKpi === c.key;
@@ -168,10 +192,10 @@ export const KpiCard: React.FC<Props> = ({
                 onSelectKpi(c.key);
               }
             }}
-            className={`group relative px-3.5 py-2.5 rounded-2xl transition-all duration-150 cursor-pointer select-none flex flex-col justify-between ${
+            className={`group relative px-3.5 py-2.5 rounded-2xl transition-all duration-200 cursor-pointer select-none flex flex-col justify-between h-full ${
               isActive
-                ? 'bg-blue-50/70 dark:bg-[#132347] border-2 border-[#2A5FFF] shadow-md ring-2 ring-[#2A5FFF]/20'
-                : 'bg-white dark:bg-[#0E172E] border border-slate-200 dark:border-slate-800 hover:border-[#2A5FFF]'
+                ? 'bg-gradient-to-b from-blue-50/90 to-sky-50/50 dark:from-[#132347] dark:to-[#0b1733] border-2 border-[#0758a6] dark:border-[#3fc3e8] shadow-lg ring-2 ring-[#00add7]/30 scale-[1.02] -translate-y-1 z-10'
+                : 'bg-white dark:bg-[#0E172E] border border-slate-200 dark:border-slate-800 hover:border-[#0758a6] hover:-translate-y-0.5'
             }`}
           >
             {/* Cabecera Compacta */}
@@ -189,8 +213,8 @@ export const KpiCard: React.FC<Props> = ({
                   <div
                     className={`p-1 rounded-lg ${
                       isActive
-                        ? 'bg-[#2A5FFF] text-white'
-                        : 'bg-slate-100 dark:bg-slate-800 text-[#2A5FFF] dark:text-[#00B4D8]'
+                        ? 'bg-[#0758a6] text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-[#0758a6] dark:text-[#3fc3e8]'
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -227,14 +251,14 @@ export const KpiCard: React.FC<Props> = ({
             <div
               className={`mt-1.5 px-2.5 py-1.5 rounded-xl bg-white border-2 transition-all flex items-center justify-between gap-1.5 shadow-sm ${
                 isActive
-                  ? 'border-[#2A5FFF] ring-2 ring-[#2A5FFF]/15'
-                  : 'border-slate-300 group-hover:border-[#2A5FFF]/60'
+                  ? 'border-[#0758a6] ring-2 ring-[#00add7]/25'
+                  : 'border-slate-300 group-hover:border-[#0758a6]/60'
               }`}
             >
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
                   style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
-                  className="text-sm sm:text-base italic font-bold text-[#2A5FFF] shrink-0"
+                  className="text-sm sm:text-base italic font-bold text-[#0758a6] shrink-0"
                 >
                   ƒ(x):
                 </span>
@@ -246,8 +270,8 @@ export const KpiCard: React.FC<Props> = ({
                 </span>
               </div>
               {isActive && (
-                <span className="text-[9px] font-mono uppercase bg-[#2A5FFF] text-white px-1.5 py-0.5 rounded font-black shrink-0">
-                  ACTIVO
+                <span className="text-[9px] font-mono uppercase bg-[#0758a6] text-white px-1.5 py-0.5 rounded font-black shrink-0 tracking-wider">
+                  ▲ ANALIZANDO
                 </span>
               )}
             </div>

@@ -695,25 +695,12 @@ export function App() {
                     />
                   </div>
 
-                  {/* Tarjeta Derecha: Inspector Matemático Dinámico */}
-                  <div className="xl:col-span-1 flex flex-col gap-3.5">
-                    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 shadow-sm">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#0758a6] dark:text-[#3fc3e8]">
-                          Árbol de círculos · {kpiSpanishLabels[activeKpi]}
-                        </span>
-                      </div>
-                      <KpiTree
-                        kpiKey={activeKpi}
-                        deals={periodFilteredDeals}
-                        kpis={kpis}
-                        quotaClp={quotaClp}
-                        money={(v) => formatCurrency(v, currency, exchangeRate, true)}
-                      />
-                    </div>
+                  {/* Tarjeta Derecha: Tarjeta Seleccionada para Análisis Profundo */}
+                  <div className="xl:col-span-1 h-full">
                     <KpiMathInspector
                       activeKpi={activeKpi}
                       kpis={kpis}
+                      deals={periodFilteredDeals}
                       quotaClp={quotaClp}
                       currency={currency}
                       exchangeRate={exchangeRate}

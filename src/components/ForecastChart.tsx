@@ -423,11 +423,11 @@ export const ForecastChart: React.FC<Props> = ({
       </div>
 
       {/* Lienzo SVG Compacto y Sin Parpadeo */}
-      <div className="relative w-full overflow-hidden rounded-xl bg-slate-50 dark:bg-[#081024] border border-slate-200 dark:border-slate-800">
+      <div className="relative w-full flex-1 min-h-[190px] overflow-hidden rounded-xl bg-slate-50 dark:bg-[#081024] border border-slate-200 dark:border-slate-800">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           preserveAspectRatio="none"
-          className="w-full h-44 sm:h-48 select-none block"
+          className="absolute inset-0 w-full h-full select-none block"
         >
           <defs>
             <linearGradient id="gradPrimaryArea" x1="0" y1="0" x2="0" y2="1">
