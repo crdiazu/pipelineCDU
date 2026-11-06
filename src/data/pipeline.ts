@@ -1,4 +1,5 @@
 import pipelineJson from './pipelineData.json';
+import { n2 } from '../utils/format';
 
 export interface DealRow {
   id: string;
@@ -41,36 +42,13 @@ export function formatCurrency(
   compact: boolean = false
 ): string {
   const value = currency === 'CLP' ? amountClp : amountClp / exchangeRate;
+  const prefix = currency === 'CLP' ? '$' : 'US$';
 
   if (compact) {
-    if (currency === 'CLP') {
-      if (Math.abs(value) >= 1_000_000) {
-        return `$${(value / 1_000_000).toFixed(2).replace('.', ',')}M`;
-      }
-      if (Math.abs(value) >= 1_000) {
-        return `$${Math.round(value / 1_000)}K`;
-      }
-      return `$${Math.round(value)}`;
-    } else {
-      if (Math.abs(value) >= 1_000_000) {
-        return `US$${(value / 1_000_000).toFixed(2)}M`;
-      }
-      if (Math.abs(value) >= 1_000) {
-        return `US$${(value / 1_000).toFixed(1)}K`;
-      }
-      return `US$${Math.round(value)}`;
-    }
+    if (Math.abs(value) >= 1_000_000) return `${prefix}${n2(value / 1_000_000)}M`;
+    if (Math.abs(value) >= 1_000) return `${prefix}${n2(value / 1_000)}K`;
+    return `${prefix}${n2(value)}`;
   }
 
-  if (currency === 'CLP') {
-    return 'CLP $' + Math.round(value).toLocaleString('es-CL');
-  } else {
-    return (
-      'US$' +
-      value.toLocaleString('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-      })
-    );
-  }
+  return (currency === 'CLP' ? 'CLP $' : 'US$') + n2(value);
 }

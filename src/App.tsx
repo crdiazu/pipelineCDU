@@ -34,6 +34,8 @@ import CduAgentDrawer from './components/CduAgentDrawer';
 import PersistentTimeline from './components/PersistentTimeline';
 import ClientTimeAnalysis from './components/ClientTimeAnalysis';
 import KpiMathInspector from './components/KpiMathInspector';
+import { KpiTree } from './components/KpiGraphs';
+import { overallPhrase } from './utils/insights';
 
 const initialDeals = loadPipeline();
 
@@ -363,7 +365,7 @@ export function App() {
                     UNIDAD CDU · B2B
                   </span>
                 </div>
-                <h1 className="font-serif text-lg font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
+                <h1 className="font-display text-sm font-normal tracking-wide text-slate-900 dark:text-white mt-0.5">
                   Pronóstico Comercial
                 </h1>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -584,7 +586,7 @@ export function App() {
                 <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 block truncate">
                   TECNOVOA · UNIDAD COMERCIAL B2B
                 </span>
-                <h2 className="text-sm sm:text-lg font-serif font-bold text-slate-900 dark:text-white truncate">
+                <h2 className="text-xs sm:text-sm font-display font-normal tracking-wide text-slate-900 dark:text-white truncate">
                   Panel de Ventas y Pronóstico Comercial CDU
                 </h2>
               </div>
@@ -694,7 +696,21 @@ export function App() {
                   </div>
 
                   {/* Tarjeta Derecha: Inspector Matemático Dinámico */}
-                  <div className="xl:col-span-1">
+                  <div className="xl:col-span-1 flex flex-col gap-3.5">
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#0B132B] border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#0758a6] dark:text-[#3fc3e8]">
+                          Árbol de círculos · {kpiSpanishLabels[activeKpi]}
+                        </span>
+                      </div>
+                      <KpiTree
+                        kpiKey={activeKpi}
+                        deals={periodFilteredDeals}
+                        kpis={kpis}
+                        quotaClp={quotaClp}
+                        money={(v) => formatCurrency(v, currency, exchangeRate, true)}
+                      />
+                    </div>
                     <KpiMathInspector
                       activeKpi={activeKpi}
                       kpis={kpis}
@@ -739,8 +755,14 @@ export function App() {
                     </div>
                   </div>
 
+                  <p className="mb-2.5 px-3 py-2 rounded-xl bg-[#e6f3fa] dark:bg-[#0e2c5a] border border-[#d0e3ef] dark:border-[#17365f] text-xs sm:text-sm font-semibold text-[#0a2347] dark:text-[#e8f3ff] leading-snug">
+                    {overallPhrase(kpis, (v) => formatCurrency(v, currency, exchangeRate, true))}
+                  </p>
+
                   <KpiCard
                     kpis={kpis}
+                    deals={periodFilteredDeals}
+                    quotaClp={quotaClp}
                     currency={currency}
                     exchangeRate={exchangeRate}
                     selectedBlock={kpiBlockFilter}

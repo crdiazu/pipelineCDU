@@ -1,5 +1,9 @@
 import React from 'react';
 import { CommercialKpis, KpiKey } from '../utils/kpi';
+import { DealRow } from '../data/pipeline';
+import { n2, pct2, times2, days2 } from '../utils/format';
+import { kpiPhrase } from '../utils/insights';
+import { KpiMiniGraph } from './KpiGraphs';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
 import {
   TrendingUp,
@@ -14,6 +18,8 @@ import {
 
 interface Props {
   kpis: CommercialKpis;
+  deals: DealRow[];
+  quotaClp: number;
   currency: CurrencyCode;
   exchangeRate: number;
   selectedBlock: 'Todos' | 'Forecast' | 'Cotizaciones' | 'Conversión';
@@ -23,6 +29,8 @@ interface Props {
 
 export const KpiCard: React.FC<Props> = ({
   kpis,
+  deals,
+  quotaClp,
   currency,
   exchangeRate,
   selectedBlock,
@@ -39,7 +47,7 @@ export const KpiCard: React.FC<Props> = ({
       blockLabel: 'PRONÓSTICO',
       title: 'Cartera Ponderada',
       mainValue: fmt(kpis.weightedPipeline, true),
-      badge: `${kpis.projectedAttainmentPct}% Meta`,
+      badge: `${n2(kpis.projectedAttainmentPct)}% Meta`,
       badgeColor:
         kpis.projectedAttainmentPct >= 100
           ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
@@ -52,7 +60,7 @@ export const KpiCard: React.FC<Props> = ({
       block: 'Forecast',
       blockLabel: 'PRONÓSTICO',
       title: 'Cobertura de Cuota',
-      mainValue: `${kpis.pipelineCoverage}×`,
+      mainValue: times2(kpis.pipelineCoverage),
       badge: kpis.pipelineCoverage >= 3 ? 'Óptimo (≥3×)' : 'Reforzar (<3×)',
       badgeColor:
         kpis.pipelineCoverage >= 3
@@ -66,7 +74,7 @@ export const KpiCard: React.FC<Props> = ({
       block: 'Forecast',
       blockLabel: 'PRONÓSTICO',
       title: 'Precisión de Pronóstico',
-      mainValue: `${kpis.forecastAccuracy}%`,
+      mainValue: pct2(kpis.forecastAccuracy),
       badge: kpis.forecastAccuracy >= 85 ? 'Exacto (≥85%)' : 'En Ajuste',
       badgeColor:
         kpis.forecastAccuracy >= 85
@@ -81,7 +89,7 @@ export const KpiCard: React.FC<Props> = ({
       blockLabel: 'COTIZACIONES',
       title: 'Valor Total en Cartera',
       mainValue: fmt(kpis.activePipelineValue, true),
-      badge: `${kpis.openDealsCount} Activas`,
+      badge: `${n2(kpis.openDealsCount).replace(',00', '')} Activas`,
       badgeColor: 'bg-blue-500/15 text-blue-700 border-blue-500/40',
       mathFormula: 'V = ∑ Cotizaciones Vigentes',
       icon: Briefcase,
@@ -91,7 +99,7 @@ export const KpiCard: React.FC<Props> = ({
       block: 'Cotizaciones',
       blockLabel: 'COTIZACIONES',
       title: 'Margen Bruto Ponderado',
-      mainValue: `${kpis.weightedGrossMarginPct}%`,
+      mainValue: pct2(kpis.weightedGrossMarginPct),
       badge: kpis.weightedGrossMarginPct >= 20 ? 'Sano (≥20%)' : 'Piso 18%',
       badgeColor: 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40',
       mathFormula: 'M = ∑ ( Margenᵢ × Pondᵢ ) ÷ Total',
@@ -102,7 +110,7 @@ export const KpiCard: React.FC<Props> = ({
       block: 'Cotizaciones',
       blockLabel: 'COTIZACIONES',
       title: 'Ciclo de Cierre (Días)',
-      mainValue: `${kpis.quoteToCloseDays} días`,
+      mainValue: days2(kpis.quoteToCloseDays),
       badge: kpis.quoteToCloseDays <= 30 ? 'Ágil (≤30d)' : 'Lento (>30d)',
       badgeColor:
         kpis.quoteToCloseDays <= 30
@@ -116,8 +124,8 @@ export const KpiCard: React.FC<Props> = ({
       block: 'Conversión',
       blockLabel: 'CONVERSIÓN',
       title: 'Tasa de Cierre (Éxito)',
-      mainValue: `${kpis.winRate}%`,
-      badge: `${kpis.wonDealsCount} Ganadas`,
+      mainValue: pct2(kpis.winRate),
+      badge: `${n2(kpis.wonDealsCount).replace(',00', '')} Ganadas`,
       badgeColor:
         kpis.winRate >= 50
           ? 'bg-emerald-500/15 text-emerald-700 border-emerald-500/40'
@@ -201,6 +209,20 @@ export const KpiCard: React.FC<Props> = ({
               </div>
             </div>
 
+            {/* Grafo de círculos del indicador */}
+            <div className="rounded-xl bg-slate-50/80 dark:bg-[#101D38] border border-slate-200/70 dark:border-slate-700/60 px-1 py-1">
+              <KpiMiniGraph
+                kpiKey={c.key}
+                deals={deals}
+                kpis={kpis}
+                quotaClp={quotaClp}
+                money={(v) => fmt(v, true)}
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-slate-600 dark:text-slate-300 min-h-[30px]">
+              {kpiPhrase(c.key, kpis, (v) => fmt(v, true))}
+            </p>
+
             {/* FÓRMULA EN CURSIVA GRANDE FULL MATEMÁTICO CON FONDO BLANCO */}
             <div
               className={`mt-1.5 px-2.5 py-1.5 rounded-xl bg-white border-2 transition-all flex items-center justify-between gap-1.5 shadow-sm ${
@@ -211,13 +233,13 @@ export const KpiCard: React.FC<Props> = ({
             >
               <div className="flex items-center gap-1.5 min-w-0">
                 <span
-                  style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+                  style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
                   className="text-sm sm:text-base italic font-bold text-[#2A5FFF] shrink-0"
                 >
                   ƒ(x):
                 </span>
                 <span
-                  style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+                  style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
                   className="text-sm sm:text-[15px] italic font-bold text-slate-900 tracking-wide truncate"
                 >
                   {c.mathFormula}

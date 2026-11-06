@@ -25,9 +25,10 @@ module.exports = {
         }
       },
       fontFamily: {
-        serif: ['Georgia', 'Cambria', '"Times New Roman"', 'Times', 'serif'],
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'Consolas', 'monospace'],
+        display: ['Michroma', 'Sora', 'system-ui', 'sans-serif'],
+        serif: ['Sora', 'Figtree', 'system-ui', 'sans-serif'],
+        sans: ['Figtree', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        mono: ['Sora', 'Figtree', 'system-ui', 'sans-serif'],
       }
     },
   },

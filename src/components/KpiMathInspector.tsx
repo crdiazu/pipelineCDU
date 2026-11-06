@@ -1,6 +1,7 @@
 import React from 'react';
 import { CommercialKpis, KpiKey } from '../utils/kpi';
 import { CurrencyCode, formatCurrency } from '../data/pipeline';
+import { n2 } from '../utils/format';
 import {
   Calculator,
   CheckCircle2,
@@ -62,14 +63,14 @@ export const KpiMathInspector: React.FC<Props> = ({
       var1Value: fmtCompact(kpis.activePipelineValue),
       operator: '×',
       var2Label: 'Probabilidad Media',
-      var2Value: `${avgProb}%`,
+      var2Value: `${n2(avgProb)}%`,
       resultLabel: 'Resultado Ponderado',
       resultValue: fmt(kpis.weightedPipeline, false),
-      targetText: `Meta: ${fmtCompact(kpis.quotaAmount)} (${kpis.projectedAttainmentPct}%)`,
+      targetText: `Meta: ${fmtCompact(kpis.quotaAmount)} (${n2(kpis.projectedAttainmentPct)}%)`,
       isGood: kpis.projectedAttainmentPct >= 100,
       diagnosis:
         kpis.projectedAttainmentPct >= 100
-          ? `Supera la cuota comercial en ${kpis.projectedAttainmentPct - 100}%. Alta seguridad de cierre.`
+          ? `Supera la cuota comercial en ${n2(kpis.projectedAttainmentPct - 100)}%. Alta seguridad de cierre.`
           : `Faltan ${fmtCompact(kpis.remainingQuota)} para cubrir el 100% de la cuota del período.`,
     },
     pipelineCoverage: {
@@ -86,7 +87,7 @@ export const KpiMathInspector: React.FC<Props> = ({
           ? fmtCompact(kpis.remainingQuota)
           : fmtCompact(quotaClp),
       resultLabel: 'Múltiplo de Cobertura',
-      resultValue: `${kpis.pipelineCoverage}× veces`,
+      resultValue: `${n2(kpis.pipelineCoverage)}× veces`,
       targetText: 'Estándar B2B: ≥ 3.0× veces',
       isGood: kpis.pipelineCoverage >= 3,
       diagnosis:
@@ -105,7 +106,7 @@ export const KpiMathInspector: React.FC<Props> = ({
       var2Label: 'Facturado + Ponderado',
       var2Value: fmtCompact(kpis.projectedTotalAmount),
       resultLabel: 'Índice de Exactitud',
-      resultValue: `${kpis.forecastAccuracy}%`,
+      resultValue: `${n2(kpis.forecastAccuracy)}%`,
       targetText: 'Meta Gerencial: ≥ 85.0%',
       isGood: kpis.forecastAccuracy >= 85,
       diagnosis:
@@ -125,7 +126,7 @@ export const KpiMathInspector: React.FC<Props> = ({
       var2Value: fmtCompact(kpis.averageDealSizeOpen),
       resultLabel: 'Volumen Bruto en Cartera',
       resultValue: fmt(kpis.activePipelineValue, false),
-      targetText: `${kpis.qualifiedRatioPct}% con probabilidad ≥ 40%`,
+      targetText: `${n2(kpis.qualifiedRatioPct)}% con probabilidad ≥ 40%`,
       isGood: kpis.activePipelineValue >= kpis.quotaAmount * 2,
       diagnosis: `Cartera activa distribuida en ${kpis.openDealsCount} oportunidades comerciales.`,
     },
@@ -140,7 +141,7 @@ export const KpiMathInspector: React.FC<Props> = ({
       var2Label: 'Cartera Ponderada',
       var2Value: fmtCompact(kpis.weightedPipeline),
       resultLabel: 'Margen Comercial',
-      resultValue: `${kpis.weightedGrossMarginPct}%`,
+      resultValue: `${n2(kpis.weightedGrossMarginPct)}%`,
       targetText: 'Piso Mínimo TECNOVOA: 18.0%',
       isGood: kpis.weightedGrossMarginPct >= 18,
       diagnosis:
@@ -159,7 +160,7 @@ export const KpiMathInspector: React.FC<Props> = ({
       var2Label: 'Plazo Meta Ágil',
       var2Value: '30 días máx.',
       resultLabel: 'Velocidad Promedio',
-      resultValue: `${kpis.quoteToCloseDays} días`,
+      resultValue: `${n2(kpis.quoteToCloseDays)} días`,
       targetText: 'Estándar Ágil: ≤ 30 días',
       isGood: kpis.quoteToCloseDays <= 30,
       diagnosis:
@@ -178,7 +179,7 @@ export const KpiMathInspector: React.FC<Props> = ({
       var2Label: 'Total Resueltas',
       var2Value: `${kpis.wonDealsCount + kpis.lostDealsCount} decididas`,
       resultLabel: 'Efectividad Comercial',
-      resultValue: `${kpis.winRate}%`,
+      resultValue: `${n2(kpis.winRate)}%`,
       targetText: `Facturado: ${fmtCompact(kpis.closedWonAmount)}`,
       isGood: kpis.winRate >= 50,
       diagnosis:
@@ -232,14 +233,14 @@ export const KpiMathInspector: React.FC<Props> = ({
           <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1">
             <span className="font-bold text-[#2A5FFF]">ECUACIÓN MATEMÁTICA APLICADA</span>
             <span
-              style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+              style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
               className="italic font-bold text-sm text-[#2A5FFF]"
             >
               ƒ(x)
             </span>
           </div>
           <p
-            style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+            style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
             className="text-lg sm:text-xl italic font-bold text-slate-950 leading-snug tracking-wide"
           >
             {d.formula}
@@ -259,7 +260,7 @@ export const KpiMathInspector: React.FC<Props> = ({
 
           <div className="col-span-1 flex justify-center">
             <span
-              style={{ fontFamily: "'EB Garamond', Georgia, serif" }}
+              style={{ fontFamily: "'Sora', 'Figtree', sans-serif" }}
               className="w-7 h-7 rounded-full bg-white border border-[#2A5FFF]/40 text-[#2A5FFF] flex items-center justify-center text-base italic font-black shadow-sm"
             >
               {d.operator}
