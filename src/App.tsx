@@ -350,14 +350,21 @@ export function App() {
             {/* Brand Header */}
             <div className="pb-3 mb-3.5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-[#2A5FFF] animate-pulse" />
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#2A5FFF] dark:text-[#00B4D8] font-bold">
-                    TECNOVOA B2B
+                <div className="flex items-center gap-2 mb-2">
+                  <img
+                    src="/logo-tecnovoa.png"
+                    alt="Tecnovoa"
+                    className="h-6 w-auto object-contain bg-white rounded px-1.5 py-0.5 shadow-sm"
+                  />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-[#00add7] animate-pulse" />
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#0758a6] dark:text-[#3fc3e8] font-bold">
+                    UNIDAD CDU · B2B
                   </span>
                 </div>
                 <h1 className="font-serif text-lg font-bold tracking-tight text-slate-900 dark:text-white mt-0.5">
-                  Pronóstico CDU
+                  Pronóstico Comercial
                 </h1>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Ejecutivo: Cristian Díaz U.

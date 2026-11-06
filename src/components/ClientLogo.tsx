@@ -148,6 +148,32 @@ const CLIENT_META: Record<string, ClientMeta> = {
   },
 };
 
+const LOCAL_BRAND_LOGOS: Record<string, string> = {
+  APC: '/brands/apc.png',
+  Aruba: '/brands/aruba.png',
+  Asus: '/brands/asus.png',
+  'Asus / Lenovo': '/brands/asus.png',
+  AWS: '/brands/aws.png',
+  Cisco: '/brands/cisco.png',
+  Dell: '/brands/dell.png',
+  Ekahau: '/brands/ekahau.svg',
+  Fortinet: '/brands/fortinet.svg',
+  HP: '/brands/hp.png',
+  'Brother / HP': '/brands/hp.png',
+  'Epson / HP': '/brands/hp.png',
+  HPE: '/brands/hpe.png',
+  Huawei: '/brands/huawei.png',
+  Kaspersky: '/brands/kaspersky.png',
+  Lenovo: '/brands/lenovo.png',
+  'Lenovo / ASC Parts': '/brands/lenovo.png',
+  Logitech: '/brands/logitech.svg',
+  Microsoft: '/brands/microsoft.png',
+  Panduit: '/brands/panduit.png',
+  Veeam: '/brands/veeam.png',
+  VMware: '/brands/vmware.png',
+  TECNOVOA: '/favicon.png',
+};
+
 const VENDOR_DOMAINS: Record<string, string> = {
   Lenovo: 'lenovo.com',
   'Lenovo / ASC Parts': 'lenovo.com',
@@ -220,19 +246,18 @@ export const ClientLogo: React.FC<{
 
 export const VendorBadge: React.FC<{ brand: string }> = ({ brand }) => {
   const [imgError, setImgError] = useState(false);
+  const localLogo = LOCAL_BRAND_LOGOS[brand];
   const domain = VENDOR_DOMAINS[brand];
-  const faviconUrl = domain
-    ? `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
-    : null;
+  const logoUrl = localLogo || (domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=32` : null);
 
   return (
     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-slate-100 dark:bg-[#101D38] text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700">
-      {faviconUrl && !imgError && (
+      {logoUrl && !imgError && (
         <img
-          src={faviconUrl}
+          src={logoUrl}
           alt={brand}
           onError={() => setImgError(true)}
-          className="w-3 h-3 object-contain rounded-sm bg-white p-[1px]"
+          className="w-3.5 h-3.5 object-contain rounded-sm bg-white p-[1px]"
         />
       )}
       <span className="truncate max-w-[115px]">{brand}</span>
