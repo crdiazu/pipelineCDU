@@ -45,7 +45,7 @@
     "nextAction": "Seguimiento propuesta formal S-COTIZACIÓN-1312 con Rigoberto",
     "nextActionDate": "2026-11-10",
     "notes": "COT 1312 Defontana (US$ 10,948.00).",
-    "estimatedMarginPct": 24.5
+    "estimatedMarginPct": 21.0
   },
   {
     "id": "deal-3",
@@ -69,7 +69,7 @@
     "nextAction": "Seguimiento de orden de compra con Juan",
     "nextActionDate": "2026-11-06",
     "notes": "COT 1310 Transportes Emepluss SpA ($490.637 bruto / $412.300 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 18.0
   },
   {
     "id": "deal-4",
@@ -93,7 +93,7 @@
     "nextAction": "Seguimiento de cotización con contraparte técnica",
     "nextActionDate": "2026-11-11",
     "notes": "COT 1295 Defontana ($4.807.600 bruto / $4.040.000 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 22.0
   },
   {
     "id": "deal-5",
@@ -117,7 +117,7 @@
     "nextAction": "Seguimiento de cotización con contraparte técnica",
     "nextActionDate": "2026-11-11",
     "notes": "COT 1293 Defontana ($4.807.600 bruto / $4.040.000 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 22.0
   },
   {
     "id": "deal-6",
@@ -141,7 +141,7 @@
     "nextAction": "Revisar avance con adquisiciones",
     "nextActionDate": "2026-11-11",
     "notes": "COT 1256 Defontana ($3.869.535 bruto / $3.251.710 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 20.0
   },
   {
     "id": "deal-7",
@@ -165,31 +165,31 @@
     "nextAction": "Revisar avance con adquisiciones",
     "nextActionDate": "2026-11-11",
     "notes": "COT 1255 Defontana ($4.403.000 bruto / $3.700.000 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 20.0
   },
   {
     "id": "deal-8",
-    "code": "COT-1279",
-    "client": "Positron Pharma",
-    "opportunity": "Reparación ThinkPad T14 batería + BIOS (COT 1279 / PED 501)",
+    "code": "NP-501",
+    "client": "POSITRON MED",
+    "opportunity": "Reparación Laptop ThinkPad T490 + Batería (COT 1279 / PED 501)",
     "brand": "Lenovo / ASC Parts",
     "businessType": "Servicio",
-    "estimatedAmount": 140000.0,
-    "stage": "Aprobación / OC",
+    "estimatedAmount": 117642.0,
+    "stage": "Closed Won",
     "probability": 100,
     "pipelineEntryDate": "2026-10-30",
     "pipelineEntryMonth": "Noviembre 2026",
     "pipelineEntrySort": "2026-11",
-    "estimatedCloseDate": "2026-11-10",
+    "estimatedCloseDate": "2026-11-06",
     "closeMonth": "Noviembre 2026",
     "closeMonthSort": "2026-11",
-    "weightedPipeline": 140000,
+    "weightedPipeline": 117642,
     "forecastCategory": "Commit",
-    "status": "Abierta",
-    "nextAction": "Comprar batería 02DL007 en ASC Parts y ejecutar instalación",
-    "nextActionDate": "2026-11-06",
-    "notes": "COT 1279 / PED 501. OC aprobada por Laura Tomassi ($166.600 bruto / $140.000 neto).",
-    "estimatedMarginPct": 35.0
+    "status": "Closed Won",
+    "nextAction": "Entrega de equipo a Laura Tomassi / Facturación y cobro",
+    "nextActionDate": "2026-11-10",
+    "notes": "Liberado como NP 501 (06-nov). Batería ASCPARTS $61.113 + servicio. Venta neta $117.642 ($139.990 c/IVA). Margen 12%.",
+    "estimatedMarginPct": 12.0
   },
   {
     "id": "deal-9",
@@ -213,7 +213,7 @@
     "nextAction": "Solicitar OC a Luis Barraza y enviar XML a doc.electronico@inn.cl",
     "nextActionDate": "2026-11-10",
     "notes": "COT 1323 (05-nov-2026, reemplaza COT 1241). Neto $430.000 / $511.700 c/IVA. Vigencia 15 días (vence 20-nov). Margen 14% @950 / 9,5% @1.000.",
-    "estimatedMarginPct": 12.1
+    "estimatedMarginPct": 14.0
   },
   {
     "id": "deal-10",
@@ -285,7 +285,7 @@
     "nextAction": "Revisión con Orlando Cifuentes",
     "nextActionDate": "2026-11-10",
     "notes": "COT 1200 Defontana ($5.133.660 bruto / $4.314.000 neto).",
-    "estimatedMarginPct": 24.5
+    "estimatedMarginPct": 28.0
   },
   {
     "id": "deal-13",
@@ -309,7 +309,7 @@
     "nextAction": "Seguimiento con Laura Tomassi",
     "nextActionDate": "2026-11-10",
     "notes": "COT 1170 Defontana ($273.700 bruto / $230.000 neto).",
-    "estimatedMarginPct": 20.5
+    "estimatedMarginPct": 20.0
   },
   {
     "id": "deal-14",
@@ -333,7 +333,7 @@
     "nextAction": "Confirmar recepción de COT 1322 y fecha de OC (tope 18-nov); definir TdC de facturación",
     "nextActionDate": "2026-11-11",
     "notes": "Servicio 30-nov-2026 → 29-nov-2027. Costo USD 693,06 en Ingram (quote 412055179). Margen 1,7% @1.000 (reprecificar a ~$753K según política TdC).",
-    "estimatedMarginPct": 4.5
+    "estimatedMarginPct": 12.0
   },
   {
     "id": "deal-15",
@@ -357,7 +357,7 @@
     "nextAction": "Seguimiento con Orlando Cifuentes para definir horizonte (1A COT 1327 vs 3A COT 1328) y emitir OC",
     "nextActionDate": "2026-11-10",
     "notes": "COT 1327 (US$15.880 / $15.418.463 neto 1A) o COT 1328 (US$24.886 / $24.162.683 neto 3A). Margen 15% s/costo DACAS ($2.062 a $3.245 USD utilidad). Respaldo en Clientes/MASSIVA.",
-    "estimatedMarginPct": 13.0
+    "estimatedMarginPct": 23.5
   },
   {
     "id": "deal-16",
@@ -367,20 +367,20 @@
     "brand": "Epson / HP",
     "businessType": "Producto",
     "estimatedAmount": 1167864.0,
-    "stage": "Cotización",
-    "probability": 70,
+    "stage": "Desierta",
+    "probability": 0,
     "pipelineEntryDate": "2026-11-03",
     "pipelineEntryMonth": "Noviembre 2026",
     "pipelineEntrySort": "2026-11",
     "estimatedCloseDate": "2026-11-12",
     "closeMonth": "Noviembre 2026",
     "closeMonthSort": "2026-11",
-    "weightedPipeline": 817505,
-    "forecastCategory": "Commit",
-    "status": "Abierta",
-    "nextAction": "Corregir propuesta a opción láser color profesional y obtener OC",
+    "weightedPipeline": 0,
+    "forecastCategory": "Pipeline",
+    "status": "Closed Lost",
+    "nextAction": "Desierta: absorbida en propuesta general de Parque TI",
     "nextActionDate": "2026-11-09",
-    "notes": "1 Láser Color HP + 1 EcoTank Epson RRHH ($1.389.758 bruto / $1.167.864 neto).",
+    "notes": "Desierta 08-nov: se consolidó dentro del proyecto general de equipamiento / parque TI 53 equipos.",
     "estimatedMarginPct": 19.5
   },
   {
@@ -435,25 +435,25 @@
     "id": "deal-19",
     "code": "OPP-114",
     "client": "Positron Pharma",
-    "opportunity": "Leasing Tecnológico 3 Años (40 PCs)",
+    "opportunity": "Parque TI — 53 Equipos (Venta 3 cuotas / ex Leasing 40 PCs)",
     "brand": "Lenovo",
-    "businessType": "Servicio",
-    "estimatedAmount": 48000000.0,
+    "businessType": "Producto",
+    "estimatedAmount": 55866000.0,
     "stage": "Propuesta",
-    "probability": 60,
+    "probability": 75,
     "pipelineEntryDate": "2026-11-02",
     "pipelineEntryMonth": "Noviembre 2026",
     "pipelineEntrySort": "2026-11",
-    "estimatedCloseDate": "2026-12-15",
-    "closeMonth": "Diciembre 2026",
-    "closeMonthSort": "2026-12",
-    "weightedPipeline": 28800000,
+    "estimatedCloseDate": "2026-11-20",
+    "closeMonth": "Noviembre 2026",
+    "closeMonthSort": "2026-11",
+    "weightedPipeline": 41899500,
     "forecastCategory": "Best Case",
     "status": "Abierta",
-    "nextAction": "Enviar propuesta consolidada hardware + Premier + ADP a Laura y Felipe",
-    "nextActionDate": "2026-11-06",
-    "notes": "Leasing operativo a 36 meses vía DLL/CSI (~USD $50K).",
-    "estimatedMarginPct": 22.0
+    "nextAction": "Validar costo distribuidor para asegurar margen 15% y formalizar propuesta",
+    "nextActionDate": "2026-11-11",
+    "notes": "Venta directa en 3 cuotas ($18.622.000 c/u a 30/60/90 días). Margen objetivo 15% (utilidad $8.379.900).",
+    "estimatedMarginPct": 15.0
   },
   {
     "id": "deal-20",
@@ -673,6 +673,30 @@
   },
   {
     "id": "deal-29",
+    "code": "COT-261108",
+    "client": "Inst Santa Maria",
+    "opportunity": "Combo Dell OptiPlex 3080M + Monitor E2420HS 24\" (COT 261108)",
+    "brand": "Dell",
+    "businessType": "Producto",
+    "estimatedAmount": 315115.0,
+    "stage": "Cotización",
+    "probability": 50,
+    "pipelineEntryDate": "2026-11-08",
+    "pipelineEntryMonth": "Noviembre 2026",
+    "pipelineEntrySort": "2026-11",
+    "estimatedCloseDate": "2026-11-23",
+    "closeMonth": "Noviembre 2026",
+    "closeMonthSort": "2026-11",
+    "weightedPipeline": 157558,
+    "forecastCategory": "Best Case",
+    "status": "Abierta",
+    "nextAction": "Seguimiento recepción cotización y definición de compra",
+    "nextActionDate": "2026-11-12",
+    "notes": "10u disponibles distribuidor SKU 3080M-I3-C2. Reacondicionado Grado A. Venta neta $315.115 ($374.987 c/IVA). Margen 20% neto.",
+    "estimatedMarginPct": 20.0
+  },
+  {
+    "id": "deal-30",
     "code": "FAC-1928",
     "client": "Hermanos Maristas",
     "opportunity": "Sensores HPE Aruba UXI + Licencias Cloud 1y (Factura 1928)",
@@ -696,7 +720,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-30",
+    "id": "deal-31",
     "code": "FAC-1923",
     "client": "Lab One",
     "opportunity": "Insumos etiquetas y consumibles (Factura 1923)",
@@ -720,7 +744,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-31",
+    "id": "deal-32",
     "code": "FAC-1922",
     "client": "MDC HEALTH",
     "opportunity": "Equipamiento e insumos médicos (Factura 1922)",
@@ -744,7 +768,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-32",
+    "id": "deal-33",
     "code": "FAC-1916",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFP MFC-L8970CDW (Factura 1916)",
@@ -768,7 +792,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-33",
+    "id": "deal-34",
     "code": "FAC-1912",
     "client": "POSITRON MED",
     "opportunity": "Monitor Xiaomi A24i + soportes (Factura 1912)",
@@ -792,7 +816,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-34",
+    "id": "deal-35",
     "code": "FAC-1911",
     "client": "Positron Pharma",
     "opportunity": "9 Monitores Xiaomi A24i + Escáner Brother + APs WiFi 6 (Factura 1911)",
@@ -816,7 +840,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-35",
+    "id": "deal-36",
     "code": "FAC-1898",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFP MFC-L8970CDW (Factura 1898)",
@@ -840,7 +864,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-36",
+    "id": "deal-37",
     "code": "FAC-1897",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFP MFC-L8970CDW (Factura 1897)",
@@ -864,7 +888,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-37",
+    "id": "deal-38",
     "code": "FAC-1896",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFP MFC-L8970CDW (Factura 1896)",
@@ -888,7 +912,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-38",
+    "id": "deal-39",
     "code": "FAC-1883",
     "client": "Positron Pharma",
     "opportunity": "TVs 55\" y 75\" + Logitech MeetUp + Soportes (Factura 1883)",
@@ -912,7 +936,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-39",
+    "id": "deal-40",
     "code": "FAC-1869",
     "client": "Positron Pharma",
     "opportunity": "Laptop HP ProBook 440 G11 (Factura 1869)",
@@ -936,7 +960,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-40",
+    "id": "deal-41",
     "code": "FAC-1868",
     "client": "POSITRON MED",
     "opportunity": "30 packs 50 DVD imprimibles bulk (Factura 1868)",
@@ -960,7 +984,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-41",
+    "id": "deal-42",
     "code": "FAC-1867",
     "client": "POSITRON MED",
     "opportunity": "2 cajas brazaletes Brother (Factura 1867)",
@@ -984,7 +1008,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-42",
+    "id": "deal-43",
     "code": "FAC-1839",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFC-L8970CDW (Factura 1839)",
@@ -1008,7 +1032,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-43",
+    "id": "deal-44",
     "code": "FAC-1838",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFC-L8970CDW (Factura 1838)",
@@ -1032,7 +1056,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-44",
+    "id": "deal-45",
     "code": "FAC-1837",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother MFC-L8970CDW (Factura 1837)",
@@ -1056,7 +1080,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-45",
+    "id": "deal-46",
     "code": "FAC-1818",
     "client": "Avance Chile",
     "opportunity": "Insumos computación y tóner (Factura 1818)",
@@ -1080,7 +1104,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-46",
+    "id": "deal-47",
     "code": "FAC-1816",
     "client": "FAYMEX",
     "opportunity": "Insumos y suministros hardware (Factura 1816)",
@@ -1104,7 +1128,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-47",
+    "id": "deal-48",
     "code": "FAC-1814",
     "client": "Lab One",
     "opportunity": "Insumos etiquetas (Factura 1814)",
@@ -1128,7 +1152,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-48",
+    "id": "deal-49",
     "code": "FAC-1801",
     "client": "Lab One",
     "opportunity": "Insumos y suministros (Factura 1801)",
@@ -1152,7 +1176,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-49",
+    "id": "deal-50",
     "code": "FAC-1795",
     "client": "Lab One",
     "opportunity": "Insumos etiquetas (Factura 1795)",
@@ -1176,7 +1200,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-50",
+    "id": "deal-51",
     "code": "FAC-1792",
     "client": "MDC HEALTH",
     "opportunity": "Equipamiento e insumos médicos (Factura 1792)",
@@ -1200,7 +1224,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-51",
+    "id": "deal-52",
     "code": "FAC-1771",
     "client": "GESPANIA",
     "opportunity": "Conectividad y redes (Factura 1771)",
@@ -1224,7 +1248,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-52",
+    "id": "deal-53",
     "code": "FAC-1765",
     "client": "POSITRON MED",
     "opportunity": "Insumos médicos (Factura 1765)",
@@ -1248,7 +1272,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-53",
+    "id": "deal-54",
     "code": "FAC-1753",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos (Factura 1753)",
@@ -1272,7 +1296,7 @@
     "estimatedMarginPct": 21.0
   },
   {
-    "id": "deal-54",
+    "id": "deal-55",
     "code": "PED-26",
     "client": "Supermercado Eltit",
     "opportunity": "Servidor Dell + Pantalla Interactiva (Pedido 26)",
@@ -1296,7 +1320,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-55",
+    "id": "deal-56",
     "code": "PED-33",
     "client": "Autopistas de Antofagasta",
     "opportunity": "Gateways celulares y redes industriales (Pedido 33)",
@@ -1320,7 +1344,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-56",
+    "id": "deal-57",
     "code": "PED-34",
     "client": "INN",
     "opportunity": "Cintas LTO-5 Ultrium y limpieza HPE (Pedido 34)",
@@ -1344,7 +1368,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-57",
+    "id": "deal-58",
     "code": "PED-44",
     "client": "Supermercado Eltit",
     "opportunity": "Equipamiento POS y suministros (Pedido 44)",
@@ -1368,7 +1392,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-58",
+    "id": "deal-59",
     "code": "PED-50",
     "client": "Hogar de Cristo",
     "opportunity": "Equipamiento corporativo y servidores (Pedido 50)",
@@ -1392,7 +1416,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-59",
+    "id": "deal-60",
     "code": "PED-67",
     "client": "Aquasys",
     "opportunity": "Meraki MX68 Router Security + Licencia 1Y (Pedido 67)",
@@ -1416,7 +1440,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-60",
+    "id": "deal-61",
     "code": "PED-68",
     "client": "Lab One",
     "opportunity": "Insumos y consumibles de etiquetado (Pedido 68)",
@@ -1440,7 +1464,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-61",
+    "id": "deal-62",
     "code": "PED-69",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos y descartables (Pedido 69)",
@@ -1464,7 +1488,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-62",
+    "id": "deal-63",
     "code": "PED-74",
     "client": "Reddersen & Becerra",
     "opportunity": "Equipamiento computacional corporativo (Pedido 74)",
@@ -1488,7 +1512,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-63",
+    "id": "deal-64",
     "code": "PED-75",
     "client": "Martcom",
     "opportunity": "Equipamiento y suministros hardware (Pedido 75)",
@@ -1512,7 +1536,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-64",
+    "id": "deal-65",
     "code": "PED-78",
     "client": "POSITRON MED",
     "opportunity": "Brazaletes térmicos Brother (Pedido 78)",
@@ -1536,7 +1560,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-65",
+    "id": "deal-66",
     "code": "PED-81",
     "client": "POSITRON MED",
     "opportunity": "Insumos y accesorios médicos (Pedido 81)",
@@ -1560,7 +1584,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-66",
+    "id": "deal-67",
     "code": "PED-93",
     "client": "Salmones de Chile",
     "opportunity": "Equipamiento informático de oficina (Pedido 93)",
@@ -1584,7 +1608,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-67",
+    "id": "deal-68",
     "code": "PED-92",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos (Pedido 92)",
@@ -1608,7 +1632,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-68",
+    "id": "deal-69",
     "code": "PED-103",
     "client": "Martcom",
     "opportunity": "Insumos computacionales (Pedido 103)",
@@ -1632,7 +1656,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-69",
+    "id": "deal-70",
     "code": "PED-125",
     "client": "INN",
     "opportunity": "Licenciamiento Microsoft y servidores (Pedido 125)",
@@ -1656,7 +1680,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-70",
+    "id": "deal-71",
     "code": "PED-115",
     "client": "Martcom",
     "opportunity": "Equipamiento y suministros TI (Pedido 115)",
@@ -1680,7 +1704,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-71",
+    "id": "deal-72",
     "code": "PED-118",
     "client": "POSITRON MED",
     "opportunity": "Brazaletes Brother (Pedido 118)",
@@ -1704,7 +1728,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-72",
+    "id": "deal-73",
     "code": "PED-158",
     "client": "INN",
     "opportunity": "Licenciamiento Corporativo y Servidores (Pedido 158)",
@@ -1728,7 +1752,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-73",
+    "id": "deal-74",
     "code": "PED-144",
     "client": "POSITRON MED",
     "opportunity": "2 discos DVR 4TB WD púrpura (Pedido 144)",
@@ -1752,7 +1776,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-74",
+    "id": "deal-75",
     "code": "PED-150",
     "client": "Datasystems",
     "opportunity": "Equipamiento hardware corporativo (Pedido 150)",
@@ -1776,7 +1800,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-75",
+    "id": "deal-76",
     "code": "PED-146",
     "client": "Lab One",
     "opportunity": "Impresora y escáner (Pedido 146)",
@@ -1800,7 +1824,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-76",
+    "id": "deal-77",
     "code": "PED-171",
     "client": "POSITRON MED",
     "opportunity": "Robot grabador Epson PP-100III + tintas (Pedido 171)",
@@ -1824,7 +1848,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-77",
+    "id": "deal-78",
     "code": "PED-147",
     "client": "MDC HEALTH",
     "opportunity": "Equipamiento e insumos médicos (Pedido 147)",
@@ -1848,7 +1872,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-78",
+    "id": "deal-79",
     "code": "PED-186",
     "client": "FAYMEX",
     "opportunity": "Impresora Brother y consumibles (Pedido 186)",
@@ -1872,7 +1896,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-79",
+    "id": "deal-80",
     "code": "PED-174",
     "client": "POSITRON MED",
     "opportunity": "2 cajas brazaletes Brother (Pedido 174)",
@@ -1896,7 +1920,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-80",
+    "id": "deal-81",
     "code": "PED-188",
     "client": "Consultoría Sebastián Cubillos",
     "opportunity": "Servicios de soporte y configuración (Pedido 188)",
@@ -1920,7 +1944,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-81",
+    "id": "deal-82",
     "code": "PED-189",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos (Pedido 189)",
@@ -1944,7 +1968,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-82",
+    "id": "deal-83",
     "code": "PED-192",
     "client": "Millacero",
     "opportunity": "Equipamiento computacional (Pedido 192)",
@@ -1968,7 +1992,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-83",
+    "id": "deal-84",
     "code": "PED-215",
     "client": "FAYMEX",
     "opportunity": "Equipamiento e infraestructura de impresión (Pedido 215)",
@@ -1992,7 +2016,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-84",
+    "id": "deal-85",
     "code": "PED-208",
     "client": "Electricidad y Sistemas",
     "opportunity": "Conectividad y redes eléctricas (Pedido 208)",
@@ -2016,7 +2040,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-85",
+    "id": "deal-86",
     "code": "PED-196",
     "client": "MDC HEALTH",
     "opportunity": "Equipamiento médico (Pedido 196)",
@@ -2040,7 +2064,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-86",
+    "id": "deal-87",
     "code": "PED-207",
     "client": "Consultoría Sebastián Cubillos",
     "opportunity": "Servicios menores descartados (Pedido 207)",
@@ -2064,7 +2088,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-87",
+    "id": "deal-88",
     "code": "PED-210",
     "client": "Millacero",
     "opportunity": "Infraestructura de red y servidores (Pedido 210)",
@@ -2088,7 +2112,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-88",
+    "id": "deal-89",
     "code": "PED-211",
     "client": "POSITRON MED",
     "opportunity": "Insumos y consumibles médicos (Pedido 211)",
@@ -2112,7 +2136,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-89",
+    "id": "deal-90",
     "code": "PED-221",
     "client": "FAYMEX",
     "opportunity": "Lote impresoras Brother y tóners (Pedido 221)",
@@ -2136,7 +2160,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-90",
+    "id": "deal-91",
     "code": "PED-231",
     "client": "MDC HEALTH",
     "opportunity": "Equipamiento médico descartado (Pedido 231)",
@@ -2160,7 +2184,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-91",
+    "id": "deal-92",
     "code": "PED-246",
     "client": "INN",
     "opportunity": "Licenciamiento Microsoft (Pedido 246)",
@@ -2184,7 +2208,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-92",
+    "id": "deal-93",
     "code": "PED-250",
     "client": "Voltta",
     "opportunity": "Conectividad y cables de red (Pedido 250)",
@@ -2208,7 +2232,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-93",
+    "id": "deal-94",
     "code": "PED-255",
     "client": "Supermercado Eltit",
     "opportunity": "Terminales POS y lectores de código (Pedido 255)",
@@ -2232,7 +2256,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-94",
+    "id": "deal-95",
     "code": "PED-252",
     "client": "Cheil Chile",
     "opportunity": "Accesorios y consumibles (Pedido 252)",
@@ -2256,7 +2280,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-95",
+    "id": "deal-96",
     "code": "PED-267",
     "client": "Cheil Chile",
     "opportunity": "Monitores corporativos y soportes (Pedido 267)",
@@ -2280,7 +2304,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-96",
+    "id": "deal-97",
     "code": "PED-260",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos (Pedido 260)",
@@ -2304,7 +2328,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-97",
+    "id": "deal-98",
     "code": "PED-275",
     "client": "FAYMEX",
     "opportunity": "Insumos Brother y tóners (Pedido 275)",
@@ -2328,7 +2352,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-98",
+    "id": "deal-99",
     "code": "PED-279",
     "client": "FAYMEX",
     "opportunity": "Insumos hardware y suministros (Pedido 279)",
@@ -2352,7 +2376,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-99",
+    "id": "deal-100",
     "code": "PED-272",
     "client": "FAYMEX",
     "opportunity": "Equipamiento computacional (Pedido 272)",
@@ -2376,7 +2400,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-100",
+    "id": "deal-101",
     "code": "PED-283",
     "client": "MDC HEALTH",
     "opportunity": "Insumos médicos y consumibles (Pedido 283)",
@@ -2400,7 +2424,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-101",
+    "id": "deal-102",
     "code": "COT-1261",
     "client": "EDIFICIO SNAP",
     "opportunity": "Equipamiento TI Edificio (COT 1261)",
@@ -2424,7 +2448,7 @@
     "estimatedMarginPct": 18.0
   },
   {
-    "id": "deal-102",
+    "id": "deal-103",
     "code": "COT-1204",
     "client": "Hermanos Maristas",
     "opportunity": "Servicios TI (COT 1204)",
@@ -2448,7 +2472,7 @@
     "estimatedMarginPct": 35.0
   },
   {
-    "id": "deal-103",
+    "id": "deal-104",
     "code": "OPP-082",
     "client": "FOSKO",
     "opportunity": "UPS 6Kva + 2 baterias",
@@ -2472,7 +2496,7 @@
     "estimatedMarginPct": 18.0
   },
   {
-    "id": "deal-104",
+    "id": "deal-105",
     "code": "COT-999",
     "client": "Supermercado Eltit",
     "opportunity": "Equipamiento POS / Escáneres (COT 999)",
@@ -2496,7 +2520,7 @@
     "estimatedMarginPct": 20.0
   },
   {
-    "id": "deal-105",
+    "id": "deal-106",
     "code": "COT-1050",
     "client": "Logística Transporte y Servicios",
     "opportunity": "Lote Hardware / Estaciones (COT 1050)",
@@ -2520,7 +2544,7 @@
     "estimatedMarginPct": 18.0
   },
   {
-    "id": "deal-106",
+    "id": "deal-107",
     "code": "COT-1049",
     "client": "BCI Seguros",
     "opportunity": "Accesorios corporativos Kensington (COT 1049)",
@@ -2544,7 +2568,7 @@
     "estimatedMarginPct": 22.0
   },
   {
-    "id": "deal-107",
+    "id": "deal-108",
     "code": "COT-975",
     "client": "GESPANIA",
     "opportunity": "Conectividad y Redes (COT 975)",
@@ -2568,7 +2592,7 @@
     "estimatedMarginPct": 25.0
   },
   {
-    "id": "deal-108",
+    "id": "deal-109",
     "code": "OPP-087",
     "client": "Lab One",
     "opportunity": "Impresora multifuncional",
@@ -2592,7 +2616,7 @@
     "estimatedMarginPct": 18.0
   },
   {
-    "id": "deal-109",
+    "id": "deal-110",
     "code": "OPP-088",
     "client": "Datasystems",
     "opportunity": "Servidor Dell PowerEdge R360 / iDRAC",
@@ -2616,7 +2640,7 @@
     "estimatedMarginPct": 15.0
   },
   {
-    "id": "deal-110",
+    "id": "deal-111",
     "code": "COT-552",
     "client": "INN",
     "opportunity": "Servidor HPE DL320 Gen11 (COT 552)",
@@ -2640,7 +2664,7 @@
     "estimatedMarginPct": 15.0
   },
   {
-    "id": "deal-111",
+    "id": "deal-112",
     "code": "COT-549",
     "client": "INN",
     "opportunity": "Licencias WS Datacenter + M365 (COT 549/567)",
@@ -2664,7 +2688,7 @@
     "estimatedMarginPct": 12.0
   },
   {
-    "id": "deal-112",
+    "id": "deal-113",
     "code": "COT-937",
     "client": "INN",
     "opportunity": "Licencias HPE (COT 937)",
